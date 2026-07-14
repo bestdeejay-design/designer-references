@@ -5,6 +5,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Справочник дизайнера — References</title>
 
+  <meta name="description" content="Справочник дизайнера — куда идти за референсами: Behance, Dribbble, Figma и Pinterest по направлениям. Быстрый поиск и подборка референсов для заказчика." />
+  <link rel="canonical" href="https://bestdeejay-design.github.io/designer-references/" />
+  <meta name="robots" content="index,follow" />
+  <meta name="theme-color" content="#0A0A0A" />
+  <meta name="author" content="Ksenia" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://bestdeejay-design.github.io/designer-references/" />
+  <meta property="og:title" content="Справочник дизайнера — References" />
+  <meta property="og:description" content="Куда идти за референсами: Behance, Dribbble, Figma и Pinterest по направлениям. Быстрый поиск и подборка референсов для заказчика." />
+  <meta property="og:image" content="https://bestdeejay-design.github.io/designer-references/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:locale" content="ru_RU" />
+  <meta property="og:site_name" content="Справочник дизайнера" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Справочник дизайнера — References" />
+  <meta name="twitter:description" content="Куда идти за референсами: Behance, Dribbble, Figma и Pinterest по направлениям. Быстрый поиск и подборка референсов для заказчика." />
+  <meta name="twitter:image" content="https://bestdeejay-design.github.io/designer-references/og-image.png" />
+  <meta name="twitter:image:alt" content="Справочник дизайнера" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -295,7 +318,34 @@
     :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     .ref-filter:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     .ref-card__link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  </style>
+      .share-btn-fixed{
+      position:fixed; bottom:32px; right:32px; z-index:2500;
+      width:52px; height:52px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      background:rgba(255,255,255,.08); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+      border:1px solid rgba(255,255,255,.18); color:var(--text); cursor:pointer;
+      transition:all .35s cubic-bezier(.22,1,.36,1); box-shadow:0 4px 24px rgba(0,0,0,.4);
+    }
+    [data-theme="light"] .share-btn-fixed{ background:rgba(0,0,0,.05); border-color:rgba(0,0,0,.12); box-shadow:0 4px 24px rgba(0,0,0,.1); }
+    .share-btn-fixed:hover{ background:var(--accent); color:#fff; border-color:var(--accent); transform:scale(1.08); box-shadow:0 6px 32px rgba(255,45,85,.25); }
+    .share-btn-fixed:active{ transform:scale(.92); }
+    .share-pop{
+      position:fixed; bottom:96px; right:32px; z-index:2500; display:none;
+      flex-direction:column; gap:6px; width:240px; padding:12px; border-radius:16px;
+      background:var(--surface); border:1px solid var(--border);
+      box-shadow:0 8px 40px rgba(0,0,0,.5); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+    }
+    .share-pop.open{ display:flex; }
+    .share-pop__title{ font-size:12px; color:var(--text-muted); margin:2px 4px 6px; text-transform:uppercase; letter-spacing:.06em; }
+    .share-pop a, .share-pop button{
+      display:flex; align-items:center; gap:10px; width:100%;
+      padding:10px 12px; border-radius:10px; border:1px solid var(--border);
+      background:var(--card-bg); color:var(--text); font-family:'Inter',sans-serif; font-size:14px; font-weight:600;
+      cursor:pointer; text-decoration:none; transition:background .2s ease;
+    }
+    .share-pop a:hover, .share-pop button:hover{ background:var(--surface-2); }
+
+</style>
 </head>
 <body>
   <header class="topbar">
@@ -788,6 +838,58 @@
     });
     document.getElementById('share-view-all').addEventListener('click', exitSharedMode);
 
+    // Плавающая кнопка «Поделиться» (как в ksu): соцсети + копирование.
+    // DOMContentLoaded: разметка кнопки находится ниже этого скрипта.
+    document.addEventListener('DOMContentLoaded', () => {
+      const shareBtn = document.getElementById('share-btn-fixed');
+      const sharePop = document.getElementById('share-pop');
+      shareBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        sharePop.classList.toggle('open');
+      });
+      document.addEventListener('click', (e) => {
+        if (sharePop.classList.contains('open') && !sharePop.contains(e.target) && e.target !== shareBtn) {
+          sharePop.classList.remove('open');
+        }
+      });
+      function shareTargets() {
+        const url = location.href;
+        const title = document.title;
+        const enc = encodeURIComponent(url);
+        const txt = encodeURIComponent(title);
+        return {
+          vk: 'https://vk.com/share.php?url=' + enc + '&title=' + txt,
+          tg: 'https://t.me/share/url?url=' + enc + '&text=' + txt,
+          fb: 'https://www.facebook.com/sharer/sharer.php?u=' + enc,
+          tw: 'https://twitter.com/intent/tweet?url=' + enc + '&text=' + txt,
+          wa: 'https://wa.me/?text=' + encodeURIComponent(title + ' ' + url),
+        };
+      }
+      sharePop.querySelectorAll('[data-share]').forEach((a) => {
+        const t = a.getAttribute('data-share');
+        if (t !== 'copy' && t !== 'native') a.href = shareTargets()[t];
+        a.addEventListener('click', (e) => {
+          e.preventDefault();
+          const t = a.getAttribute('data-share');
+          if (t === 'copy') {
+            navigator.clipboard.writeText(location.href)
+              .then(() => showToast('Ссылка скопирована'))
+              .catch(() => showToast('Скопируй вручную: ' + location.href));
+            sharePop.classList.remove('open');
+            return;
+          }
+          if (t === 'native' && navigator.share) {
+            navigator.share({ title: document.title, url: location.href }).catch(() => {});
+            sharePop.classList.remove('open');
+            return;
+          }
+          const u = shareTargets()[t];
+          if (u) window.open(u, '_blank', 'noopener');
+          sharePop.classList.remove('open');
+        });
+      });
+    });
+
     // Инициализация: открыли чужую подборку (?sel=) — она важнее
     const _sp = new URLSearchParams(location.search);
     const _sel = _sp.get('sel');
@@ -812,5 +914,22 @@
       });
     }
   </script>
-</body>
+  <button class="share-btn-fixed" id="share-btn-fixed" aria-label="Поделиться">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+      <line x1="15.71" y1="7.04" x2="8.29" y2="9.96"/><line x1="8.29" y1="14.04" x2="15.71" y2="16.96"/>
+    </svg>
+  </button>
+  <div class="share-pop" id="share-pop" role="dialog" aria-label="Поделиться">
+    <div class="share-pop__title">Поделиться</div>
+    <a data-share="vk" href="#" target="_blank" rel="noopener">VK</a>
+    <a data-share="tg" href="#" target="_blank" rel="noopener">Telegram</a>
+    <a data-share="fb" href="#" target="_blank" rel="noopener">Facebook</a>
+    <a data-share="tw" href="#" target="_blank" rel="noopener">Twitter / X</a>
+    <a data-share="wa" href="#" target="_blank" rel="noopener">WhatsApp</a>
+    <button data-share="native" type="button">Поделиться… (система)</button>
+    <button data-share="copy" type="button">Копировать ссылку</button>
+  </div>
+
+  </body>
 </html>
