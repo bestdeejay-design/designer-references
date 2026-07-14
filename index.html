@@ -618,9 +618,10 @@
       const id = presentOrder[presentIndex];
       const r = data[parseInt(id.slice(1), 10)];
       const stage = document.getElementById('present-stage');
+      const u = platformSearchUrls(idx);
       const links = [
-        ['Be', r.behance, 'be'], ['Dr', r.dribbble, 'dr'],
-        ['Fg', r.figma, 'fg'], ['Pt', r.pinterest, 'pt'],
+        ['Be', u.beh, 'be'], ['Dr', u.dri, 'dr'],
+        ['Fg', u.fig, 'fg'], ['Pt', u.pin, 'pt'],
       ].filter(([, url]) => url).map(([t, url, c]) =>
         `<a class="present-slide__link--${c}" href="${url}" target="_blank" rel="noopener">${t}</a>`).join('');
       stage.innerHTML = `<div class="present-slide" style="--slide-from:${r.color}33;--slide-to:${r.color}0a">
@@ -672,11 +673,12 @@
         const i = parseInt(id.slice(1), 10);
         const r = data[i];
         if (!r) return;
+        const u = platformSearchUrls(i);
         lines.push('### ' + r.cat);
-        if (r.behance) lines.push('- Behance: ' + r.behance);
-        if (r.dribbble) lines.push('- Dribbble: ' + r.dribbble);
-        if (r.figma) lines.push('- Figma: ' + r.figma);
-        if (r.pinterest) lines.push('- Pinterest: ' + r.pinterest);
+        if (u.beh) lines.push('- Behance: ' + u.beh);
+        if (u.dri) lines.push('- Dribbble: ' + u.dri);
+        if (u.fig) lines.push('- Figma: ' + u.fig);
+        if (u.pin) lines.push('- Pinterest: ' + u.pin);
         lines.push('');
       });
       return lines.join('\n').trim() + '\n';

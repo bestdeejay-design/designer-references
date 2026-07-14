@@ -84,22 +84,30 @@ references/
   `data-theme` на `<html>`; стили для светлой темы заданы через
   `[data-theme="light"]` в `references.css`.
 - **Сетки.** `buildReferences()` заполняет `#references-grid` карточками
-  направлений; `buildResourceSection(id, items)` — `#special-grid` и
-  `#boards-grid` списками ресурсов.
+  направлений (ссылки карточек — точные поиски по направлению на площадках,
+  через `platformSearchUrls`); `buildResourceSection(id, items)` —
+  `#special-grid` и `#boards-grid` списками ресурсов.
 
 ## Модель данных (`references.data.js`)
 
 | Переменная | Назначение |
 |---|---|
 | `refsI18n` | Переводы заголовков/подзаголовков (en + ru), ключи `refs.*` |
-| `refsData` | Основные референсы по направлениям: `{ cat, desc, behance, dribbble, figma, pinterest, color }` для en и ru |
+| `refsData` | Основные референсы по направлениям: `{ cat, desc, color }` для en и ru |
+| `refSearch` | Поисковые фразы по направлениям (язык-нейтральные), индекс совпадает с `refsData[lang]`; формируют точные ссылки-поиск на площадках |
 | `specialResources` | Спецресурсы (It's Nice That, Awwwards, Typewolf, …) |
 | `boardResources` | Сервисы мудбордов (Are.na, Muzli, Designspiration) |
 | `refTags` | Теги направлений (язык-нейтральные), индекс совпадает с `refsData[lang]` |
 
-Чтобы добавить направление — допиши объект в `refsData.en` / `refsData.ru`
-**и** соответствующий массив тегов в `refTags` под тем же индексом.
+Чтобы добавить направление — допиши объект в `refsData.en` / `refsData.ru`,
+**и** соответствующий массив тегов в `refTags` и поисковую фразу в `refSearch`
+под тем же индексом.
 Чтобы добавить ресурс — в `specialResources` / `boardResources`.
+
+> Ссылки карточек — это **реальные поиски** по направлению на Behance /
+> Dribbble / Figma / Pinterest, а не общее галерейное меню. Форматы URL
+> каждой площадки собраны в `platformSearchUrls()` (`references.js`) и
+> берут фразу из `refSearch`.
 
 Чтобы добавить направление — допиши объект в `refsData.en` / `refsData.ru`.
 Чтобы добавить ресурс — в `specialResources` / `boardResources`.

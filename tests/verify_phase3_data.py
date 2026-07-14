@@ -40,6 +40,17 @@ def main():
         link_counts = [len(c.query_selector_all(".ref-card__link")) for c in cards]
         assert all(n == 4 for n in link_counts), f"link count mismatch: {link_counts}"
 
+        # platform links are precise per-discipline SEARCHES (not generic galleries)
+        first = cards[0]
+        beh = first.query_selector(".ref-card__link--be").get_attribute("href")
+        dri = first.query_selector(".ref-card__link--dr").get_attribute("href")
+        fig = first.query_selector(".ref-card__link--fg").get_attribute("href")
+        pin = first.query_selector(".ref-card__link--pt").get_attribute("href")
+        assert "/search/projects/branding%20identity%20logo" in beh, f"behance не поиск: {beh}"
+        assert "/search/branding-identity-logo" in dri, f"dribbble не поиск: {dri}"
+        assert "community/search?query=branding+identity+logo" in fig, f"figma не поиск: {fig}"
+        assert "/search/pins/?q=branding+identity+logo" in pin, f"pinterest не поиск: {pin}"
+
         # data-id is r0..r17 (used by selection + filter)
         ids = [c.get_attribute("data-id") for c in cards]
         assert ids == [f"r{i}" for i in range(18)], f"data-id mismatch: {ids[:3]}..."
