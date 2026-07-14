@@ -104,6 +104,65 @@
     }
     .ref-filter:focus { border-color: var(--text-secondary); }
     .ref-filter::placeholder { color: var(--text-muted); }
+
+    .ref-card { position: relative; }
+    .ref-card__select {
+      position: absolute;
+      top: 10px; right: 10px;
+      z-index: 2;
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 16px; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s ease;
+    }
+    .ref-card__select:hover { color: var(--text); border-color: var(--text-secondary); }
+    .ref-card.is-selected { outline: 2px solid var(--text); outline-offset: 2px; }
+    .ref-card.is-selected .ref-card__select { background: var(--text); color: var(--bg); border-color: var(--text); }
+
+    .share-bar {
+      position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%);
+      display: flex; align-items: center; gap: 10px;
+      background: var(--surface); border: 1px solid var(--border);
+      padding: 10px 14px; border-radius: 14px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.35); z-index: 50;
+      font-size: 14px;
+    }
+    .share-bar__count { font-weight: 600; }
+    .share-bar__btn {
+      font-family: 'Inter', sans-serif; font-weight: 600; font-size: 13px;
+      padding: 8px 14px; border-radius: 9px; cursor: pointer;
+      border: 1px solid var(--border); background: var(--text); color: var(--bg);
+    }
+    .share-bar__btn--ghost { background: transparent; color: var(--text); }
+    .share-bar__btn:hover { opacity: 0.88; }
+
+    .share-banner {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 60;
+      display: flex; align-items: center; justify-content: center; gap: 14px;
+      padding: 10px 16px; background: var(--text); color: var(--bg);
+      font-size: 14px; font-weight: 600;
+    }
+    .share-banner__btn {
+      font-family: 'Inter', sans-serif; font-weight: 600; font-size: 13px;
+      padding: 6px 12px; border-radius: 8px; cursor: pointer;
+      border: 1px solid var(--bg); background: transparent; color: var(--bg);
+    }
+
+    .toast {
+      position: fixed; left: 50%; bottom: 80px; transform: translateX(-50%);
+      background: var(--text); color: var(--bg);
+      padding: 10px 16px; border-radius: 10px; font-size: 14px; font-weight: 600;
+      z-index: 70; box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+    }
+
+    body.shared-mode .ref-card__select { display: none; }
+    body.shared-mode .share-bar { display: none !important; }
+    [hidden] { display: none !important; }
   </style>
 </head>
 <body>
@@ -141,17 +200,35 @@
     </section>
   </main>
 
+  <div class="share-banner" id="share-banner" hidden>
+    <span id="share-banner-text"></span>
+    <button type="button" id="share-view-all" class="share-banner__btn">Смотреть всё</button>
+  </div>
+
+  <div class="share-bar" id="share-bar" hidden>
+    <span class="share-bar__count" id="share-count"></span>
+    <button type="button" id="share-copy" class="share-bar__btn">Копировать ссылку</button>
+    <button type="button" id="share-clear" class="share-bar__btn share-bar__btn--ghost">Очистить</button>
+  </div>
+
+  <div class="toast" id="toast" hidden></div>
+
   <script src="references.js"></script>
   <script>
     // Глобальная переменная `lang`, которую ожидают функции из references.js
     let lang = 'ru';
     let filterQuery = '';
 
+    let selected = new Set();
+    let sharedMode = false;
+    const sharedIds = new Set();
+
     function applyFilter() {
-      const cards = document.querySelectorAll('.ref-card, .ref-mini');
-      cards.forEach((card) => {
-        const match = !filterQuery || card.textContent.toLowerCase().includes(filterQuery);
-        card.style.display = match ? '' : 'none';
+      const q = filterQuery;
+      document.querySelectorAll('.ref-card, .ref-mini').forEach((card) => {
+        const textOk = !q || card.textContent.toLowerCase().includes(q);
+        const sharedOk = !sharedMode || sharedIds.has(card.dataset.id);
+        card.style.display = (textOk && sharedOk) ? '' : 'none';
       });
     }
 
@@ -177,6 +254,7 @@
       document.getElementById('lang-ru').setAttribute('aria-pressed', String(lang === 'ru'));
       document.getElementById('lang-en').setAttribute('aria-pressed', String(lang === 'en'));
 
+      syncSelectionClasses();
       applyFilter();
     }
 
@@ -196,6 +274,84 @@
     });
 
     render();
+
+    // --- Шеринг-подборка: выбрать направления → одна ссылка ?sel= ---
+    function syncSelectionClasses() {
+      document.querySelectorAll('.ref-card').forEach((c) => {
+        const on = selected.has(c.dataset.id);
+        c.classList.toggle('is-selected', on);
+        const btn = c.querySelector('.ref-card__select');
+        if (btn) {
+          btn.setAttribute('aria-pressed', String(on));
+          btn.querySelector('.ref-card__select-star').textContent = on ? '★' : '☆';
+        }
+      });
+    }
+    function updateShareBar() {
+      const bar = document.getElementById('share-bar');
+      if (sharedMode || selected.size === 0) { bar.hidden = true; return; }
+      bar.hidden = false;
+      document.getElementById('share-count').textContent = 'Выбрано: ' + selected.size;
+    }
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.hidden = false;
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => { t.hidden = true; }, 1800);
+    }
+    function buildShareUrl() {
+      const ids = [...selected].join(',');
+      const base = location.origin + location.pathname;
+      return ids ? base + '?sel=' + encodeURIComponent(ids) : base;
+    }
+    function enterSharedMode() {
+      sharedMode = true;
+      document.body.classList.add('shared-mode');
+      const banner = document.getElementById('share-banner');
+      banner.hidden = false;
+      document.getElementById('share-banner-text').textContent = 'Подборка: ' + sharedIds.size + ' направлений';
+      applyFilter();
+    }
+    function exitSharedMode() {
+      sharedMode = false;
+      sharedIds.clear();
+      document.body.classList.remove('shared-mode');
+      document.getElementById('share-banner').hidden = true;
+      const u = new URL(location.href);
+      u.searchParams.delete('sel');
+      history.replaceState(null, '', u.pathname + u.search);
+      applyFilter();
+    }
+    document.getElementById('references-grid').addEventListener('click', (e) => {
+      const btn = e.target.closest('.ref-card__select');
+      if (!btn) return;
+      e.preventDefault();
+      const card = btn.closest('.ref-card');
+      const id = card.dataset.id;
+      if (selected.has(id)) selected.delete(id); else selected.add(id);
+      syncSelectionClasses();
+      updateShareBar();
+    });
+    document.getElementById('share-copy').addEventListener('click', async () => {
+      const url = buildShareUrl();
+      try { await navigator.clipboard.writeText(url); showToast('Ссылка скопирована'); }
+      catch { showToast('Скопируй вручную: ' + url); }
+    });
+    document.getElementById('share-clear').addEventListener('click', () => {
+      selected.clear(); syncSelectionClasses(); updateShareBar();
+    });
+    document.getElementById('share-view-all').addEventListener('click', exitSharedMode);
+
+    // Инициализация: открыли чужую подборку (?sel=)
+    const _sp = new URLSearchParams(location.search);
+    const _sel = _sp.get('sel');
+    if (_sel) {
+      _sel.split(',').filter(Boolean).forEach((id) => sharedIds.add(id));
+      enterSharedMode();
+    }
+    syncSelectionClasses();
+    updateShareBar();
   </script>
 </body>
 </html>

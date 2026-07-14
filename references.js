@@ -103,10 +103,12 @@ const boardResources = [
 function buildReferences() {
   const grid = document.getElementById('references-grid')
   const data = refsData[lang] || refsData.en
-  data.forEach((r) => {
+  data.forEach((r, i) => {
     const card = document.createElement('div')
     card.className = 'ref-card'
+    card.dataset.id = 'r' + i
     card.innerHTML = `
+      <button class="ref-card__select" type="button" aria-pressed="false" aria-label="Выбрать для подборки"><span class="ref-card__select-star">☆</span></button>
       <div class="ref-card__inner" style="background:linear-gradient(135deg,${r.color}22,${r.color}08)">
         <div class="ref-card__cat">${r.cat}</div>
         <div class="ref-card__desc">${r.desc}</div>
