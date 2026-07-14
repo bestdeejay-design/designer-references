@@ -179,3 +179,38 @@
   .ref-card__link{min-width:calc(33% - 6px);padding:6px 4px}
   .references{padding:0 20px 60px}
 }
+
+/* ============================================================
+ * ПЕЧАТНАЯ ВЕРСИЯ (Phase 3.3)
+ * - прячем «хром» (шапка, фильтры, чипы, шеринг, тосты)
+ * - светлые цвета, видимые ссылки (URL печатаются)
+ * - selection-aware: при выборе печатаем только выбранные
+ * ============================================================ */
+@media print{
+  html,body{background:#fff !important;color:#000 !important}
+  .topbar,.ref-filterbar,.cat-bar,.platform-bar,.tag-bar,.ref-result,
+  .share-bar,.share-banner,.toast,.present-overlay,
+  .ref-card__select,.ref-card__similar{display:none !important}
+
+  .references{padding:0 0 0 !important}
+  .references__header{margin:0 0 24px}
+  .references__grid{grid-template-columns:repeat(2,1fr);gap:12px}
+  .ref-card{border:1px solid #ccc !important;overflow:visible;break-inside:avoid;page-break-inside:avoid}
+  .ref-card__inner{background:#fff !important;min-height:0;padding:16px 18px}
+  .ref-card__cat{color:#000 !important;font-size:15px}
+  .ref-card__desc{color:#333 !important;font-size:11px}
+  .ref-card__links{border-top:1px solid #ddd;margin-top:10px;padding-top:8px}
+  .ref-card__link{background:none !important;color:#000 !important;border:1px solid #ddd;flex:1 1 45%}
+  .ref-card__link span:last-child{color:#555 !important}
+  /* Печатаем реальный URL — бумажная подборка должна быть полезной */
+  .ref-card__link::after{content:" " attr(href);font-size:8px;color:#666;word-break:break-all;display:block;margin-top:2px}
+
+  .ref-section{margin:24px auto 0}
+  .ref-section__title,.ref-section__desc{color:#000 !important}
+  .ref-mini__inner{background:#fff !important;border:1px solid #ccc !important;color:#000}
+  .ref-mini__name{color:#000 !important}
+  .ref-mini__desc{color:#333 !important}
+
+  /* selection-aware: печатаем только выбранное */
+  body.has-selection .ref-card:not(.is-selected){display:none !important}
+}

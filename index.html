@@ -12,6 +12,7 @@
     rel="stylesheet"
   />
   <link rel="stylesheet" href="references.css" />
+  <link rel="manifest" href="manifest.webmanifest" />
 
   <style>
     /* tokens aligned with ksu/css/tokens.css (портфолио-источник) */
@@ -365,6 +366,7 @@
     </div>
   </div>
 
+  <script src="references.data.js"></script>
   <script src="references.js"></script>
   <script>
     // Глобальная переменная `lang`, которую ожидают функции из references.js
@@ -592,6 +594,7 @@
           btn.querySelector('.ref-card__select-star').textContent = on ? '★' : '☆';
         }
       });
+      document.body.classList.toggle('has-selection', selected.size > 0);
     }
     function updateShareBar() {
       const bar = document.getElementById('share-bar');
@@ -753,6 +756,14 @@
     }
     syncSelectionClasses();
     updateShareBar();
+  </script>
+  <script>
+    // PWA: регистрируем service worker для офлайн-режима (безопасный контекст: https/localhost)
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+      });
+    }
   </script>
 </body>
 </html>

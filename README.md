@@ -32,24 +32,32 @@
 
 ```
 references/
-├── index.html        ← точка входа: собирает страницу, подключает css+js
-├── references.css    ← стили блока References (.references, .ref-card*, .ref-mini*)
-├── references.js     ← данные (refsData, specialResources, boardResources) + рендер
-├── README.md         ← техническая документация (запуск, структура, план)
+├── index.html          ← точка входа: собирает страницу, подключает css+js
+├── references.css      ← стили блока References (.references, .ref-card*, .ref-mini*)
+├── references.data.js  ← данные (refsI18n, refsData, specialResources, boardResources, refTags)
+├── references.js       ← рендер (buildReferences, buildResourceSection); читает данные из references.data.js
+├── README.md           ← техническая документация (запуск, структура, план)
+├── tests/              ← Playwright-проверки фич (verify_fav, verify_phase1/2/3_data)
 └── docs/
-    └── CONCEPT.md    ← концепция: цели, структура, возможности, смысл
+    └── CONCEPT.md      ← концепция: цели, структура, возможности, смысл
 ```
 
 `index.html` — это «оживляющая» обвязка, которой не хватало исходному
 вырезанному коду. Он:
 
-1. подключает `references.css` и `references.js`;
+1. подключает `references.css`, затем `references.data.js` (данные) и
+   `references.js` (рендер);
 2. задаёт глобальную переменную `lang` (её читают функции рендера);
 3. определяет CSS-токены темы (`--bg`, `--text`, `--border`, …) —
    они приходят из `ksu/css/tokens.css` в оригинале, здесь заданы
    прямо в `<style>` страницы, чтобы проект был самодостаточным;
 4. рисует шапку и три сетки: `#references-grid`, `#special-grid`,
    `#boards-grid`.
+
+> Данные и код разделены: `references.data.js` содержит только массивы
+> (`refsI18n`, `refsData`, `specialResources`, `boardResources`, `refTags`),
+> а `references.js` — только функции рендера. `references.data.js`
+> обязан грузиться **перед** `references.js`.
 
 ## Как запустить
 
@@ -79,7 +87,7 @@ references/
   направлений; `buildResourceSection(id, items)` — `#special-grid` и
   `#boards-grid` списками ресурсов.
 
-## Модель данных (`references.js`)
+## Модель данных (`references.data.js`)
 
 | Переменная | Назначение |
 |---|---|
@@ -87,6 +95,11 @@ references/
 | `refsData` | Основные референсы по направлениям: `{ cat, desc, behance, dribbble, figma, pinterest, color }` для en и ru |
 | `specialResources` | Спецресурсы (It's Nice That, Awwwards, Typewolf, …) |
 | `boardResources` | Сервисы мудбордов (Are.na, Muzli, Designspiration) |
+| `refTags` | Теги направлений (язык-нейтральные), индекс совпадает с `refsData[lang]` |
+
+Чтобы добавить направление — допиши объект в `refsData.en` / `refsData.ru`
+**и** соответствующий массив тегов в `refTags` под тем же индексом.
+Чтобы добавить ресурс — в `specialResources` / `boardResources`.
 
 Чтобы добавить направление — допиши объект в `refsData.en` / `refsData.ru`.
 Чтобы добавить ресурс — в `specialResources` / `boardResources`.
@@ -118,11 +131,21 @@ references/
 ## Что дальше (черновик плана)
 
 1. **Каркас страницы** — ✅ сделано (`index.html`).
-2. **Категории** — навигация по направлениям из `refsData`
+2. **Категории** — ✅ навигация по направлениям из `refsData`
    (брендинг, упаковка, плакаты, иллюстрация, 3D и т.д.).
-3. **Быстрый шеринг заказчику** — выбрать несколько карточек по
+3. **Быстрый шеринг заказчику** — ✅ выбрать несколько карточек по
    разным проектам и сгенерировать одну ссылку-подборку.
 4. **Фильтр по проектам** — показывать релевантные референсы
    под конкретную задачу заказчика.
-5. **Дизайн-система** — переиспользовать токены из `ksu/css/tokens.css`,
+5. **Дизайн-система** — ✅ переиспользовать токены из `ksu/css/tokens.css`,
    чтобы справочник выглядел в одном стиле с портфолио.
+
+### Дополнительно реализовано (Phase 3)
+
+- **Данные вынесены в `references.data.js`** — направления и ресурсы
+  отделены от кода рендера (`references.js`); добавлять направления
+  и ревью через PR стало проще.
+- **PWA / оффлайн** — `manifest.webmanifest` + `sw.js` (cache-first
+  каркаса); сайт открывается без сети и ставится как приложение.
+- **Печатная версия** — `@media print`: прячет интерфейс, печатает
+  реальные URL и (при выборе) только отобранные направления.
