@@ -85,7 +85,8 @@ references/
   `[data-theme="light"]` в `references.css`.
 - **Сетки.** `buildReferences()` заполняет `#references-grid` карточками
   направлений (ссылки карточек — точные поиски по направлению на площадках,
-  через `platformSearchUrls`); `buildResourceSection(id, items)` —
+  через `platformSearchUrls`; запрос дополняется активными фильтрами:
+  текстовый поиск + теги); `buildResourceSection(id, items)` —
   `#special-grid` и `#boards-grid` списками ресурсов.
 
 ## Модель данных (`references.data.js`)
@@ -105,9 +106,11 @@ references/
 Чтобы добавить ресурс — в `specialResources` / `boardResources`.
 
 > Ссылки карточек — это **реальные поиски** по направлению на Behance /
-> Dribbble / Figma / Pinterest, а не общее галерейное меню. Форматы URL
-> каждой площадки собраны в `platformSearchUrls()` (`references.js`) и
-> берут фразу из `refSearch`.
+> Dribbble / Figma / Pinterest, а не общее галерейное меню. Базовая фраза
+> берётся из `refSearch`, а `platformSearchUrls()` (`references.js`)
+> дописывает к ней активные фильтры (текст поиска + выбранные теги), так
+> что запрос отражает то, что отфильтровано на экране. Фильтр платформы
+> выбирает, по каким площадкам показывать ссылки.
 
 Чтобы добавить направление — допиши объект в `refsData.en` / `refsData.ru`.
 Чтобы добавить ресурс — в `specialResources` / `boardResources`.

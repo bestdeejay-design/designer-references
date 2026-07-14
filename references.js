@@ -12,9 +12,10 @@
  *  - Dribbble: /search/{query через "-" }
  *  - Figma:    /community/search?query={query через "+"}&resource_type=files&...
  *  - Pinterest: /search/pins/?q={query через "+"}
- * Поисковая фраза — язык-нейтральная (refSearch[index]). */
-function platformSearchUrls(index) {
-  const q = (refSearch[index] || '').trim();
+ * Базовая фраза — язык-нейтральная (refSearch[index]); queryOverride
+ * позволяет подставить составной запрос из активных фильтров. */
+function platformSearchUrls(index, queryOverride) {
+  const q = (queryOverride != null ? queryOverride : (refSearch[index] || '')).trim();
   const plus = q.split(' ').join('+');
   const dash = q.split(' ').join('-');
   return {

@@ -407,6 +407,28 @@
       { ru: 'Арт', en: 'Art', ids: [11, 16, 17] },
     ];
 
+    // Составной поисковый запрос для направления #index из активных
+    // фильтров: базовая фраза направления + текстовый поиск + активные теги
+    // (без дублей, порядок сохранён).
+    function activeSearchQuery(index) {
+      const parts = [];
+      const base = (refSearch[index] || '').trim();
+      if (base) parts.push(base);
+      if (filterQuery) parts.push(filterQuery);
+      activeTags.forEach((t) => parts.push(t));
+      const seen = new Set();
+      const out = [];
+      for (const p of parts) {
+        for (const tok of p.split(/\s+/)) {
+          const t = tok.trim();
+          if (!t) continue;
+          const k = t.toLowerCase();
+          if (!seen.has(k)) { seen.add(k); out.push(t); }
+        }
+      }
+      return out.join(' ');
+    }
+
     function applyFilter() {
       const q = filterQuery;
       document.querySelectorAll('.ref-card, .ref-mini').forEach((card) => {
@@ -423,13 +445,22 @@
             || (activePlatforms.has('pt') && card.dataset.pt);
         }
         card.style.display = (textOk && sharedOk && catOk && platformOk && tagOk && favOk) ? '' : 'none';
-        // Фильтр по платформе скрывает ссылки невыбранных площадок внутри карточки
-        card.querySelectorAll('.ref-card__link').forEach((a) => {
-          const cls = [...a.classList].find((c) => c.indexOf('ref-card__link--') === 0);
-          const pk = cls ? cls.slice('ref-card__link--'.length) : null;
-          const showLink = activePlatforms.size === 0 || (pk && activePlatforms.has(pk));
-          a.style.display = showLink ? '' : 'none';
-        });
+        // Для карточек пересобираем ссылки-поиск из текущих фильтров и
+        // прячем ссылки невыбранных площадок (фильтр по платформе).
+        if (card.classList.contains('ref-card')) {
+          const i = parseInt(card.dataset.id.slice(1), 10);
+          const u = platformSearchUrls(i, activeSearchQuery(i));
+          card.querySelectorAll('.ref-card__link').forEach((a) => {
+            const cls = [...a.classList].find((c) => c.indexOf('ref-card__link--') === 0);
+            const pk = cls ? cls.slice('ref-card__link--'.length) : null;
+            if (pk === 'be') a.href = u.beh;
+            else if (pk === 'dr') a.href = u.dri;
+            else if (pk === 'fg') a.href = u.fig;
+            else if (pk === 'pt') a.href = u.pin;
+            const showLink = activePlatforms.size === 0 || (pk && activePlatforms.has(pk));
+            a.style.display = showLink ? '' : 'none';
+          });
+        }
       });
       updateResultCount();
     }

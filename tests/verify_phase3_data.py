@@ -51,6 +51,18 @@ def main():
         assert "community/search?query=branding+identity+logo" in fig, f"figma не поиск: {fig}"
         assert "/search/pins/?q=branding+identity+logo" in pin, f"pinterest не поиск: {pin}"
 
+        # links reflect ACTIVE FILTERS, not just the discipline phrase
+        beh0 = first.query_selector(".ref-card__link--be").get_attribute("href")
+        page.fill("#ref-filter", "poster")
+        page.wait_for_timeout(100)
+        beh1 = first.query_selector(".ref-card__link--be").get_attribute("href")
+        assert "poster" in beh1, f"текстовый фильтр не попал в ссылку: {beh1}"
+        assert beh1 != beh0, "ссылка не изменилась при фильтре"
+        page.fill("#ref-filter", "")
+        page.wait_for_timeout(100)
+        beh2 = first.query_selector(".ref-card__link--be").get_attribute("href")
+        assert beh2 == beh0, "ссылка не вернулась к базовой без фильтра"
+
         # data-id is r0..r17 (used by selection + filter)
         ids = [c.get_attribute("data-id") for c in cards]
         assert ids == [f"r{i}" for i in range(18)], f"data-id mismatch: {ids[:3]}..."
