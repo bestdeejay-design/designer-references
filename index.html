@@ -84,6 +84,26 @@
       letter-spacing: -0.03em;
       margin: 0 0 10px;
     }
+
+    .ref-filterbar {
+      max-width: 1440px;
+      margin: 0 auto 28px;
+    }
+    .ref-filter {
+      width: 100%;
+      max-width: 360px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+    .ref-filter:focus { border-color: var(--text-secondary); }
+    .ref-filter::placeholder { color: var(--text-muted); }
   </style>
 </head>
 <body>
@@ -100,6 +120,10 @@
     <div class="references__header">
       <h1 class="references__label" id="refs-label"></h1>
       <p class="references__subtitle" id="refs-subtitle"></p>
+    </div>
+
+    <div class="ref-filterbar">
+      <input id="ref-filter" class="ref-filter" type="search" placeholder="Поиск по направлениям…" />
     </div>
 
     <div class="references__grid" id="references-grid"></div>
@@ -121,6 +145,15 @@
   <script>
     // Глобальная переменная `lang`, которую ожидают функции из references.js
     let lang = 'ru';
+    let filterQuery = '';
+
+    function applyFilter() {
+      const cards = document.querySelectorAll('#references-grid .ref-card');
+      cards.forEach((card) => {
+        const match = !filterQuery || card.textContent.toLowerCase().includes(filterQuery);
+        card.style.display = match ? '' : 'none';
+      });
+    }
 
     function render() {
       document.documentElement.lang = lang;
@@ -143,6 +176,8 @@
 
       document.getElementById('lang-ru').setAttribute('aria-pressed', String(lang === 'ru'));
       document.getElementById('lang-en').setAttribute('aria-pressed', String(lang === 'en'));
+
+      applyFilter();
     }
 
     function setLang(next) {
@@ -154,6 +189,11 @@
       const current = document.documentElement.getAttribute('data-theme');
       document.documentElement.setAttribute('data-theme', current === 'light' ? 'dark' : 'light');
     }
+
+    document.getElementById('ref-filter').addEventListener('input', (e) => {
+      filterQuery = e.target.value.trim().toLowerCase();
+      applyFilter();
+    });
 
     render();
   </script>
