@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru" data-theme="dark">
+<html lang="ru" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -75,33 +75,10 @@
     }
 
     #bg-aurora{
-      position:fixed; inset:0; z-index:-1; overflow:hidden;
-      background:#120E0C;
+      position:fixed; inset:0; z-index:-1;
+      background:#161210;
     }
-    [data-theme="light"] #bg-aurora{ background:#EFE6E1; }
-    #bg-aurora::before, #bg-aurora::after{
-      content:""; position:absolute; inset:-15%;
-      background:
-        radial-gradient(46% 46% at 18% 24%, rgba(121,60,52,.85), transparent 64%),
-        radial-gradient(42% 42% at 82% 20%, rgba(192,152,147,.80), transparent 64%),
-        radial-gradient(50% 50% at 72% 82%, rgba(132,73,65,.82), transparent 64%),
-        radial-gradient(46% 46% at 26% 78%, rgba(237,209,201,.55), transparent 64%);
-      animation: aurora-drift 26s ease-in-out infinite alternate;
-      will-change: transform;
-    }
-    #bg-aurora::after{ animation-duration:34s; animation-direction:alternate-reverse; opacity:.85; }
-    [data-theme="light"] #bg-aurora::before, [data-theme="light"] #bg-aurora::after{
-      background:
-        radial-gradient(46% 46% at 18% 24%, rgba(121,60,52,.45), transparent 64%),
-        radial-gradient(42% 42% at 82% 20%, rgba(192,152,147,.55), transparent 64%),
-        radial-gradient(50% 50% at 72% 82%, rgba(132,73,65,.40), transparent 64%),
-        radial-gradient(46% 46% at 26% 78%, rgba(238,194,187,.62), transparent 64%);
-    }
-    @keyframes aurora-drift{
-      0%{ transform: translate3d(-4%,-2%,0) scale(1.05) rotate(0deg); }
-      50%{ transform: translate3d(5%,3%,0) scale(1.15) rotate(8deg); }
-      100%{ transform: translate3d(-3%,4%,0) scale(1.1) rotate(-6deg); }
-    }
+    [data-theme="light"] #bg-aurora{ background:#E7E0D4; }
 
     .topbar {
       max-width: 1440px;
@@ -414,7 +391,6 @@
     }
 
     @media (prefers-reduced-motion: reduce){
-      #bg-aurora::before, #bg-aurora::after{ animation: none; }
       body.ambient .ref-card{ animation: none; }
     }
 
