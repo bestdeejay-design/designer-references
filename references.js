@@ -107,6 +107,10 @@ function buildReferences() {
     const card = document.createElement('div')
     card.className = 'ref-card'
     card.dataset.id = 'r' + i
+    card.dataset.be = r.behance ? '1' : ''
+    card.dataset.dr = r.dribbble ? '1' : ''
+    card.dataset.fg = r.figma ? '1' : ''
+    card.dataset.pt = r.pinterest ? '1' : ''
     card.innerHTML = `
       <button class="ref-card__select" type="button" aria-pressed="false" aria-label="Выбрать для подборки"><span class="ref-card__select-star">☆</span></button>
       <div class="ref-card__inner" style="background:linear-gradient(135deg,${r.color}22,${r.color}08)">
