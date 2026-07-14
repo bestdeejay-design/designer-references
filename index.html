@@ -176,6 +176,78 @@
     .cat-chip:hover { background: var(--surface-2); }
     .cat-chip[aria-pressed="true"] { background: var(--text); color: var(--bg); border-color: var(--text); }
     body.shared-mode .cat-bar { display: none; }
+
+    /* === Режим презентации (Б) === */
+    body.present-mode { overflow: hidden; }
+    .present-overlay {
+      position: fixed; inset: 0; z-index: 4000;
+      background: var(--overlay-dark, rgba(0,0,0,0.92));
+      color: var(--text);
+      display: flex; flex-direction: column;
+      padding: 24px; opacity: 0; pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .present-overlay.is-open { opacity: 1; pointer-events: auto; }
+    .present-top {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 16px;
+    }
+    .present-counter {
+      font-family: 'Unbounded', sans-serif; font-weight: 700;
+      font-size: 15px; letter-spacing: -0.01em;
+    }
+    .present-counter b { color: var(--accent); }
+    .present-hint {
+      font-size: 12px; color: var(--text-secondary); text-align: right;
+      line-height: 1.5; opacity: 0.8; transition: opacity 0.4s ease;
+    }
+    .present-overlay.hide-hint .present-hint { opacity: 0; }
+    .present-close {
+      flex: none; width: 38px; height: 38px; border-radius: 50%;
+      border: 1px solid var(--border); background: var(--surface);
+      color: var(--text); font-size: 18px; line-height: 1; cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .present-close:hover { background: var(--surface-2); }
+    .present-stage {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      min-height: 0; padding: 24px 0;
+    }
+    .present-slide {
+      width: min(880px, 100%); max-height: 100%;
+      border: 1px solid var(--border); border-radius: 16px; overflow: hidden;
+      background: var(--card-bg); display: flex; flex-direction: column;
+    }
+    .present-slide__inner {
+      padding: 40px 44px; display: flex; flex-direction: column;
+      min-height: 240px; gap: 16px;
+      background: linear-gradient(135deg, var(--slide-from, #FF2D5522), var(--slide-to, #FF2D5508));
+    }
+    .present-slide__cat {
+      font-family: 'Unbounded', sans-serif; font-weight: 700;
+      font-size: clamp(24px, 4vw, 40px); letter-spacing: -0.02em;
+    }
+    .present-slide__desc { font-size: 15px; line-height: 1.6; color: var(--text-secondary); }
+    .present-slide__links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; }
+    .present-slide__links a {
+      flex: 1; min-width: 90px; text-align: center;
+      padding: 12px 10px; border-radius: 8px; text-decoration: none;
+      font-size: 13px; font-weight: 600;
+      background: rgba(255,255,255,0.06); color: var(--text);
+      transition: filter 0.2s ease;
+    }
+    .present-slide__links a:hover { filter: brightness(1.25); }
+    .present-nav {
+      display: flex; align-items: center; justify-content: center; gap: 14px;
+      padding-top: 8px;
+    }
+    .present-nav button {
+      width: 46px; height: 46px; border-radius: 50%; cursor: pointer;
+      border: 1px solid var(--border); background: var(--surface); color: var(--text);
+      font-size: 18px; line-height: 1; transition: all 0.2s ease;
+    }
+    .present-nav button:hover { background: var(--surface-2); }
+    .present-nav button:disabled { opacity: 0.3; cursor: default; }
   </style>
 </head>
 <body>
@@ -224,10 +296,24 @@
     <span class="share-bar__count" id="share-count"></span>
     <button type="button" id="share-copy" class="share-bar__btn">Копировать ссылку</button>
     <button type="button" id="share-md" class="share-bar__btn share-bar__btn--ghost">Список</button>
+    <button type="button" id="share-present" class="share-bar__btn share-bar__btn--ghost">Презентация</button>
     <button type="button" id="share-clear" class="share-bar__btn share-bar__btn--ghost">Очистить</button>
   </div>
 
   <div class="toast" id="toast" hidden></div>
+
+  <div class="present-overlay" id="present-overlay" hidden>
+    <div class="present-top">
+      <div class="present-counter" id="present-counter"></div>
+      <div class="present-hint">← → — листать · Esc — выйти</div>
+      <button type="button" id="present-close" class="present-close" aria-label="Закрыть презентацию">✕</button>
+    </div>
+    <div class="present-stage" id="present-stage"></div>
+    <div class="present-nav">
+      <button type="button" id="present-prev" aria-label="Назад">←</button>
+      <button type="button" id="present-next" aria-label="Вперёд">→</button>
+    </div>
+  </div>
 
   <script src="references.js"></script>
   <script>
@@ -240,6 +326,8 @@
     const sharedIds = new Set();
 
     let activeCategory = null;
+    let presentIndex = 0;
+    const presentOrder = [];
     const CATEGORIES = [
       { ru: 'Все', en: 'All', ids: null },
       { ru: 'Брендинг', en: 'Branding', ids: [0, 1, 4, 5] },
@@ -353,6 +441,54 @@
       bar.hidden = false;
       document.getElementById('share-count').textContent = 'Выбрано: ' + selected.size;
     }
+
+    /* === Режим презентации (Б) === */
+    function presentGo(i) {
+      if (presentOrder.length === 0) return;
+      const idx = Math.max(0, Math.min(presentOrder.length - 1, i));
+      presentIndex = idx;
+      presentRender();
+    }
+    function presentRender() {
+      const data = refsData[lang] || refsData.en;
+      const id = presentOrder[presentIndex];
+      const r = data[parseInt(id.slice(1), 10)];
+      const stage = document.getElementById('present-stage');
+      const links = [
+        ['Be', r.behance, 'be'], ['Dr', r.dribbble, 'dr'],
+        ['Fg', r.figma, 'fg'], ['Pt', r.pinterest, 'pt'],
+      ].filter(([, url]) => url).map(([t, url, c]) =>
+        `<a class="present-slide__link--${c}" href="${url}" target="_blank" rel="noopener">${t}</a>`).join('');
+      stage.innerHTML = `<div class="present-slide" style="--slide-from:${r.color}33;--slide-to:${r.color}0a">
+        <div class="present-slide__inner">
+          <div class="present-slide__cat">${r.cat}</div>
+          <div class="present-slide__desc">${r.desc}</div>
+          <div class="present-slide__links">${links}</div>
+        </div>
+      </div>`;
+      document.getElementById('present-counter').innerHTML = `<b>${presentIndex + 1}</b> / ${presentOrder.length}`;
+      document.getElementById('present-prev').disabled = presentIndex === 0;
+      document.getElementById('present-next').disabled = presentIndex === presentOrder.length - 1;
+    }
+    function enterPresentMode() {
+      if (selected.size === 0) return;
+      presentOrder.length = 0;
+      [...selected].forEach((id) => presentOrder.push(id));
+      presentIndex = 0;
+      const ov = document.getElementById('present-overlay');
+      ov.hidden = false;
+      document.body.classList.add('present-mode');
+      requestAnimationFrame(() => ov.classList.add('is-open'));
+      presentRender();
+      clearTimeout(enterPresentMode._t);
+      enterPresentMode._t = setTimeout(() => ov.classList.add('hide-hint'), 2600);
+    }
+    function exitPresentMode() {
+      const ov = document.getElementById('present-overlay');
+      ov.classList.remove('is-open', 'hide-hint');
+      document.body.classList.remove('present-mode');
+      setTimeout(() => { ov.hidden = true; }, 250);
+    }
     function showToast(msg) {
       const t = document.getElementById('toast');
       t.textContent = msg;
@@ -421,6 +557,16 @@
       const md = buildSelectionMarkdown();
       try { await navigator.clipboard.writeText(md); showToast('Список скопирован'); }
       catch { showToast('Скопируй вручную:\n' + md); }
+    });
+    document.getElementById('share-present').addEventListener('click', enterPresentMode);
+    document.getElementById('present-close').addEventListener('click', exitPresentMode);
+    document.getElementById('present-prev').addEventListener('click', () => presentGo(presentIndex - 1));
+    document.getElementById('present-next').addEventListener('click', () => presentGo(presentIndex + 1));
+    document.addEventListener('keydown', (e) => {
+      if (!document.body.classList.contains('present-mode')) return;
+      if (e.key === 'Escape') { exitPresentMode(); }
+      else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); presentGo(presentIndex + 1); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); presentGo(presentIndex - 1); }
     });
     document.getElementById('share-view-all').addEventListener('click', exitSharedMode);
 
