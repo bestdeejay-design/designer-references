@@ -446,6 +446,9 @@
       bar.hidden = false;
       document.getElementById('share-count').textContent = 'Выбрано: ' + selected.size;
     }
+    function saveFav() {
+      try { localStorage.setItem('references:fav', JSON.stringify([...selected])); } catch (e) {}
+    }
 
     /* === Режим презентации (Б) === */
     function presentGo(i) {
@@ -549,6 +552,7 @@
       if (selected.has(id)) selected.delete(id); else selected.add(id);
       syncSelectionClasses();
       updateShareBar();
+      saveFav();
     });
     document.getElementById('share-copy').addEventListener('click', async () => {
       const url = buildShareUrl();
@@ -556,7 +560,7 @@
       catch { showToast('Скопируй вручную: ' + url); }
     });
     document.getElementById('share-clear').addEventListener('click', () => {
-      selected.clear(); syncSelectionClasses(); updateShareBar();
+      selected.clear(); syncSelectionClasses(); updateShareBar(); saveFav();
     });
     document.getElementById('share-md').addEventListener('click', async () => {
       const md = buildSelectionMarkdown();
@@ -575,9 +579,15 @@
     });
     document.getElementById('share-view-all').addEventListener('click', exitSharedMode);
 
-    // Инициализация: открыли чужую подборку (?sel=)
+    // Инициализация: открыли чужую подборку (?sel=) — она важнее
     const _sp = new URLSearchParams(location.search);
     const _sel = _sp.get('sel');
+    if (!_sel) {
+      try {
+        const saved = JSON.parse(localStorage.getItem('references:fav') || '[]');
+        if (Array.isArray(saved)) saved.forEach((id) => selected.add(id));
+      } catch (e) {}
+    }
     if (_sel) {
       _sel.split(',').filter(Boolean).forEach((id) => sharedIds.add(id));
       enterSharedMode();
