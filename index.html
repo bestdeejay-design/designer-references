@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Справочник дизайнера — References</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="references.css" />
+
+  <style>
+    :root {
+      --bg: #0d0d0f;
+      --surface: #141417;
+      --surface-2: #1c1c20;
+      --card-bg: #161619;
+      --border: rgba(255, 255, 255, 0.10);
+      --text: #f2f2f4;
+      --text-secondary: rgba(255, 255, 255, 0.62);
+      --text-muted: rgba(255, 255, 255, 0.42);
+      --gap: 16px;
+    }
+    [data-theme="light"] {
+      --bg: #ffffff;
+      --surface: #f6f6f8;
+      --surface-2: #ececf0;
+      --card-bg: #ffffff;
+      --border: rgba(0, 0, 0, 0.12);
+      --text: #111114;
+      --text-secondary: rgba(0, 0, 0, 0.62);
+      --text-muted: rgba(0, 0, 0, 0.45);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    .topbar {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 24px 40px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .topbar__brand {
+      font-family: 'Unbounded', sans-serif;
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: -0.02em;
+    }
+    .controls { display: flex; gap: 8px; }
+    .controls button {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      transition: all 0.2s ease;
+    }
+    .controls button:hover { background: var(--surface-2); }
+    .controls button[aria-pressed="true"] { background: var(--text); color: var(--bg); }
+
+    .references__label {
+      font-family: 'Unbounded', sans-serif;
+      font-weight: 700;
+      font-size: clamp(28px, 5vw, 44px);
+      letter-spacing: -0.03em;
+      margin: 0 0 10px;
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar__brand">Справочник дизайнера</div>
+    <div class="controls">
+      <button id="lang-ru" type="button" onclick="setLang('ru')">RU</button>
+      <button id="lang-en" type="button" onclick="setLang('en')">EN</button>
+      <button id="theme-toggle" type="button" onclick="toggleTheme()" aria-label="Переключить тему">☾ / ☀</button>
+    </div>
+  </header>
+
+  <main class="references">
+    <div class="references__header">
+      <h1 class="references__label" id="refs-label"></h1>
+      <p class="references__subtitle" id="refs-subtitle"></p>
+    </div>
+
+    <div class="references__grid" id="references-grid"></div>
+
+    <section class="ref-section">
+      <h2 class="ref-section__title" id="special-title"></h2>
+      <p class="ref-section__desc" id="special-desc"></p>
+      <div class="ref-section__grid ref-section__grid--special" id="special-grid"></div>
+    </section>
+
+    <section class="ref-section">
+      <h2 class="ref-section__title" id="boards-title"></h2>
+      <p class="ref-section__desc" id="boards-desc"></p>
+      <div class="ref-section__grid ref-section__grid--boards" id="boards-grid"></div>
+    </section>
+  </main>
+
+  <script src="references.js"></script>
+  <script>
+    // Глобальная переменная `lang`, которую ожидают функции из references.js
+    let lang = 'ru';
+
+    function render() {
+      document.documentElement.lang = lang;
+
+      document.getElementById('refs-label').textContent = refsI18n[lang]['refs.label'];
+      document.getElementById('refs-subtitle').textContent = refsI18n[lang]['refs.subtitle'];
+      document.getElementById('special-title').textContent = refsI18n[lang]['refs.specialTitle'];
+      document.getElementById('special-desc').textContent = refsI18n[lang]['refs.specialDesc'];
+      document.getElementById('boards-title').textContent = refsI18n[lang]['refs.boardsTitle'];
+      document.getElementById('boards-desc').textContent = refsI18n[lang]['refs.boardsDesc'];
+
+      // Пересобираем сетки с нуля при смене языка
+      document.getElementById('references-grid').innerHTML = '';
+      document.getElementById('special-grid').innerHTML = '';
+      document.getElementById('boards-grid').innerHTML = '';
+
+      buildReferences();
+      buildResourceSection('special-grid', specialResources);
+      buildResourceSection('boards-grid', boardResources);
+
+      document.getElementById('lang-ru').setAttribute('aria-pressed', String(lang === 'ru'));
+      document.getElementById('lang-en').setAttribute('aria-pressed', String(lang === 'en'));
+    }
+
+    function setLang(next) {
+      lang = next;
+      render();
+    }
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme');
+      document.documentElement.setAttribute('data-theme', current === 'light' ? 'dark' : 'light');
+    }
+
+    render();
+  </script>
+</body>
+</html>

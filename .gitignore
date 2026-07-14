@@ -1,0 +1,5 @@
+# OpenCode working directory (plans / sessions)
+.omo/
+
+# Aura local data (if initialized inside the project)
+.aura/
