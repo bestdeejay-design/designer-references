@@ -35,7 +35,9 @@ references/
 ├── index.html        ← точка входа: собирает страницу, подключает css+js
 ├── references.css    ← стили блока References (.references, .ref-card*, .ref-mini*)
 ├── references.js     ← данные (refsData, specialResources, boardResources) + рендер
-└── README.md         ← этот документ
+├── README.md         ← техническая документация (запуск, структура, план)
+└── docs/
+    └── CONCEPT.md    ← концепция: цели, структура, возможности, смысл
 ```
 
 `index.html` — это «оживляющая» обвязка, которой не хватало исходному
