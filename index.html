@@ -148,7 +148,7 @@
     let filterQuery = '';
 
     function applyFilter() {
-      const cards = document.querySelectorAll('#references-grid .ref-card');
+      const cards = document.querySelectorAll('.ref-card, .ref-mini');
       cards.forEach((card) => {
         const match = !filterQuery || card.textContent.toLowerCase().includes(filterQuery);
         card.style.display = match ? '' : 'none';
