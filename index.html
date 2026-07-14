@@ -41,22 +41,23 @@
     /* tokens aligned with ksu/css/tokens.css (портфолио-источник) */
     :root {
       --bg: #0A0A0A;
-      --surface: rgba(255, 255, 255, 0.06);
-      --surface-2: rgba(255, 255, 255, 0.10);
-      --card-bg: rgba(255, 255, 255, 0.03);
-      --border: rgba(255, 255, 255, 0.04);
+      --surface: rgba(255, 255, 255, 0.08);
+      --surface-2: rgba(255, 255, 255, 0.14);
+      --card-bg: rgba(255, 255, 255, 0.06);
+      --border: rgba(255, 255, 255, 0.16);
       --text: #F5F5F5;
-      --text-secondary: rgba(255, 255, 255, 0.7);
-      --text-muted: rgba(255, 255, 255, 0.3);
+      --text-secondary: rgba(255, 255, 255, 0.72);
+      --text-muted: rgba(255, 255, 255, 0.45);
       --accent: #FF2D55;
       --gap: 24px;
+      --glass-blur: blur(20px) saturate(140%);
     }
     [data-theme="light"] {
       --bg: #F5F0EB;
-      --surface: rgba(0, 0, 0, 0.05);
-      --surface-2: rgba(0, 0, 0, 0.09);
-      --card-bg: rgba(0, 0, 0, 0.04);
-      --border: rgba(0, 0, 0, 0.10);
+      --surface: rgba(0, 0, 0, 0.06);
+      --surface-2: rgba(0, 0, 0, 0.10);
+      --card-bg: rgba(0, 0, 0, 0.05);
+      --border: rgba(0, 0, 0, 0.12);
       --text: #1A1A1A;
       --text-secondary: rgba(0, 0, 0, 0.78);
       --text-muted: rgba(0, 0, 0, 0.5);
@@ -65,11 +66,35 @@
     * { box-sizing: border-box; }
     html, body { margin: 0; }
     body {
-      background: var(--bg);
+      background: transparent;
       color: var(--text);
       font-family: 'Inter', system-ui, -apple-system, sans-serif;
       -webkit-font-smoothing: antialiased;
-      transition: background 0.3s ease, color 0.3s ease;
+      transition: color 0.3s ease;
+      min-height: 100vh;
+    }
+
+    #bg-aurora{
+      position:fixed; inset:0; z-index:-1; overflow:hidden;
+      background:#0A0A0A;
+    }
+    [data-theme="light"] #bg-aurora{ background:#F5F0EB; }
+    #bg-aurora::before, #bg-aurora::after{
+      content:""; position:absolute; inset:-20%;
+      background:
+        radial-gradient(38% 38% at 18% 28%, rgba(255,45,85,.55), transparent 60%),
+        radial-gradient(34% 34% at 82% 22%, rgba(124,58,237,.55), transparent 60%),
+        radial-gradient(42% 42% at 72% 78%, rgba(34,211,238,.45), transparent 60%),
+        radial-gradient(40% 40% at 28% 74%, rgba(251,146,60,.45), transparent 60%);
+      filter: blur(60px) saturate(140%);
+      animation: aurora-drift 26s ease-in-out infinite alternate;
+      will-change: transform;
+    }
+    #bg-aurora::after{ animation-duration:34s; animation-direction:alternate-reverse; opacity:.85; }
+    @keyframes aurora-drift{
+      0%{ transform: translate3d(-4%,-2%,0) scale(1.05) rotate(0deg); }
+      50%{ transform: translate3d(5%,3%,0) scale(1.15) rotate(8deg); }
+      100%{ transform: translate3d(-3%,4%,0) scale(1.1) rotate(-6deg); }
     }
 
     .topbar {
@@ -345,14 +370,58 @@
     }
     .share-pop a:hover, .share-pop button:hover{ background:var(--surface-2); }
 
-</style>
+      /* === GLASSMORPHISM: frosted surfaces === */
+    .controls button, .ref-filter, .cat-chip, .plat-chip, .tag-chip, #fav-only,
+    .ref-card__select, .share-bar, .present-close, .present-nav button,
+    .share-pop a, .share-pop button{
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      box-shadow: 0 8px 32px rgba(0,0,0,.18);
+    }
+    .tag-chip{ background: rgba(255,255,255,.06); }
+    [data-theme="light"] .tag-chip{ background: rgba(0,0,0,.05); }
+    .references__label, .topbar__brand{
+      text-shadow: 0 1px 24px rgba(0,0,0,.28);
+    }
+
+    /* === Режим «Заставка» (ambient) === */
+    body.ambient .topbar,
+    body.ambient .ref-filterbar,
+    body.ambient .cat-bar,
+    body.ambient .platform-bar,
+    body.ambient .tag-bar,
+    body.ambient .ref-result,
+    body.ambient .share-bar,
+    body.ambient .share-banner,
+    body.ambient .share-btn-fixed,
+    body.ambient .toast{ display:none !important; }
+    body.ambient .ref-card__select{ display:none !important; }
+    body.ambient .references{ padding:0; }
+    body.ambient .references__header{ display:none; }
+    body.ambient .references__grid{ max-width:1600px; gap:36px; }
+    body.ambient .ref-card{ animation: ambient-float 9s ease-in-out infinite; }
+    body.ambient .ref-card:nth-child(2n){ animation-delay:-3s; }
+    body.ambient .ref-card:nth-child(3n){ animation-delay:-6s; }
+    @keyframes ambient-float{
+      0%,100%{ transform: translateY(0); }
+      50%{ transform: translateY(-10px); }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      #bg-aurora::before, #bg-aurora::after{ animation: none; }
+      body.ambient .ref-card{ animation: none; }
+    }
+
+  </style>
 </head>
 <body>
+  <div id="bg-aurora" aria-hidden="true"></div>
   <header class="topbar">
     <div class="topbar__brand">Справочник дизайнера</div>
     <div class="controls">
       <button id="lang-ru" type="button" onclick="setLang('ru')">RU</button>
       <button id="lang-en" type="button" onclick="setLang('en')">EN</button>
+      <button id="ambient-toggle" type="button" onclick="toggleAmbient()" aria-pressed="false" aria-label="Заставка" title="Заставка (S)">◈</button>
       <button id="theme-toggle" type="button" onclick="toggleTheme()" aria-label="Переключить тему">☾ / ☀</button>
     </div>
   </header>
@@ -670,6 +739,21 @@
       document.documentElement.setAttribute('data-theme', next);
       try { localStorage.setItem('references:theme', next); } catch (e) {}
     }
+
+    function toggleAmbient() {
+      const on = document.body.classList.toggle('ambient');
+      const btn = document.getElementById('ambient-toggle');
+      if (btn) btn.setAttribute('aria-pressed', String(on));
+    }
+    document.addEventListener('keydown', (e) => {
+      if (document.body.classList.contains('ambient')) {
+        if (e.key === 'Escape' || e.key === 's' || e.key === 'S') { e.preventDefault(); toggleAmbient(); }
+        return;
+      }
+      if ((e.key === 's' || e.key === 'S') && !/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName)) {
+        e.preventDefault(); toggleAmbient();
+      }
+    });
 
     document.getElementById('ref-filter').addEventListener('input', (e) => {
       filterQuery = e.target.value.trim().toLowerCase();
