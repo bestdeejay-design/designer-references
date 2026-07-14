@@ -190,6 +190,34 @@
     .ref-result { max-width: 1440px; margin: 0 auto 10px; color: var(--text-muted); font-size: 13px; }
     body.shared-mode .platform-bar { display: none; }
 
+    .tag-bar { max-width: 1440px; margin: 0 auto 12px; display: flex; flex-wrap: wrap; gap: 8px; }
+    .tag-chip {
+      font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500;
+      padding: 4px 11px; border-radius: 999px; cursor: pointer;
+      border: 1px solid var(--border); background: transparent; color: var(--text-muted);
+      transition: all 0.2s ease;
+    }
+    .tag-chip:hover { color: var(--text); border-color: var(--text-secondary); }
+    .tag-chip[aria-pressed="true"] { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .tag-chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    body.shared-mode .tag-bar { display: none; }
+    #fav-only {
+      font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+      padding: 7px 14px; border-radius: 999px; cursor: pointer;
+      border: 1px solid var(--border); background: var(--surface); color: var(--text);
+      transition: all 0.2s ease;
+    }
+    #fav-only[aria-pressed="true"] { background: var(--accent); color: #fff; border-color: var(--accent); }
+    #fav-only:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .ref-card__similar {
+      margin-top: 10px; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600;
+      padding: 5px 12px; border-radius: 8px; cursor: pointer; align-self: flex-start;
+      border: 1px solid var(--border); background: transparent; color: var(--text-secondary);
+      transition: all 0.2s ease;
+    }
+    .ref-card__similar:hover { color: var(--accent); border-color: var(--accent); }
+    .ref-card__similar:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
     /* === Режим презентации (Б) === */
     body.present-mode { overflow: hidden; }
     .present-overlay {
@@ -286,11 +314,13 @@
 
     <div class="ref-filterbar">
       <input id="ref-filter" class="ref-filter" type="search" placeholder="Поиск по направлениям…" />
+      <button id="fav-only" type="button" aria-pressed="false">☆ Только избранное</button>
     </div>
 
     <div class="cat-bar" id="cat-bar"></div>
     <div class="platform-bar" id="platform-bar"></div>
     <p class="ref-result" id="ref-result" aria-live="polite"></p>
+    <div class="tag-bar" id="tag-bar"></div>
 
     <div class="references__grid" id="references-grid"></div>
 
@@ -360,6 +390,9 @@
       { key: 'fg', label: 'Figma' },
       { key: 'pt', label: 'Pinterest' },
     ];
+    const activeTags = new Set();
+    let favOnly = false;
+    const ALL_TAGS = [...new Set(refTags.flat())].sort();
     let presentIndex = 0;
     const presentOrder = [];
     const CATEGORIES = [
@@ -378,6 +411,8 @@
         const textOk = !q || card.textContent.toLowerCase().includes(q);
         const sharedOk = !sharedMode || sharedIds.has(card.dataset.id);
         const catOk = !activeCategory || activeCategory.has(card.dataset.id);
+        const tagOk = activeTags.size === 0 || (card.dataset.tags && card.dataset.tags.split(',').some((t) => activeTags.has(t)));
+        const favOk = !favOnly || selected.has(card.dataset.id);
         let platformOk = activePlatforms.size === 0;
         if (!platformOk) {
           platformOk = (activePlatforms.has('be') && card.dataset.be)
@@ -385,7 +420,7 @@
             || (activePlatforms.has('fg') && card.dataset.fg)
             || (activePlatforms.has('pt') && card.dataset.pt);
         }
-        card.style.display = (textOk && sharedOk && catOk && platformOk) ? '' : 'none';
+        card.style.display = (textOk && sharedOk && catOk && platformOk && tagOk && favOk) ? '' : 'none';
         // Фильтр по платформе скрывает ссылки невыбранных площадок внутри карточки
         card.querySelectorAll('.ref-card__link').forEach((a) => {
           const cls = [...a.classList].find((c) => c.indexOf('ref-card__link--') === 0);
@@ -432,6 +467,19 @@
       const el = document.getElementById('ref-result');
       if (el) el.textContent = (lang === 'ru' ? 'Направлений: ' : 'Directions: ') + n;
     }
+    function renderTagChips() {
+      const bar = document.getElementById('tag-bar');
+      bar.innerHTML = '';
+      ALL_TAGS.forEach((t) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'tag-chip';
+        b.textContent = t;
+        b.setAttribute('aria-pressed', String(activeTags.has(t)));
+        b.dataset.tag = t;
+        bar.appendChild(b);
+      });
+    }
 
     document.getElementById('cat-bar').addEventListener('click', (e) => {
       const b = e.target.closest('.cat-chip');
@@ -455,6 +503,33 @@
       if (activePlatforms.has(k)) activePlatforms.delete(k); else activePlatforms.add(k);
       renderPlatformChips();
       applyFilter();
+    });
+
+    document.getElementById('tag-bar').addEventListener('click', (e) => {
+      const b = e.target.closest('.tag-chip');
+      if (!b) return;
+      const t = b.dataset.tag;
+      if (activeTags.has(t)) activeTags.delete(t); else activeTags.add(t);
+      renderTagChips();
+      applyFilter();
+    });
+
+    document.getElementById('fav-only').addEventListener('click', (e) => {
+      favOnly = !favOnly;
+      e.currentTarget.setAttribute('aria-pressed', String(favOnly));
+      applyFilter();
+    });
+
+    document.getElementById('references-grid').addEventListener('click', (e) => {
+      const sb = e.target.closest('.ref-card__similar');
+      if (!sb) return;
+      e.preventDefault();
+      const i = Number(sb.dataset.i);
+      activeTags.clear();
+      (refTags[i] || []).forEach((t) => activeTags.add(t));
+      renderTagChips();
+      applyFilter();
+      document.getElementById('references-grid').scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
 
     function render() {
@@ -482,6 +557,7 @@
       syncSelectionClasses();
       renderChips();
       renderPlatformChips();
+      renderTagChips();
       applyFilter();
     }
 

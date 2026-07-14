@@ -100,6 +100,28 @@ const boardResources = [
 
 
 /* --- Рендер карточек референсов (нужен #references-grid) --- */
+// Теги направлений (язык-нейтральные), индекс совпадает с refsData[lang]
+const refTags = [
+  ['brand', 'logo', 'identity'],
+  ['type', 'lettering', 'editorial'],
+  ['packaging', 'product', 'print'],
+  ['poster', 'print', 'campaign'],
+  ['logo', 'brand', 'mark'],
+  ['editorial', 'print', 'book'],
+  ['data', 'editorial', 'ui'],
+  ['environment', 'signage', 'print'],
+  ['packaging', 'music', 'print'],
+  ['campaign', 'brand', 'social'],
+  ['game', 'ui', 'character'],
+  ['illustration', 'character', 'editorial'],
+  ['product', 'industrial', 'ui'],
+  ['ui', 'web', 'app', 'product'],
+  ['motion', 'video', 'animation'],
+  ['3d', 'render', 'cgi'],
+  ['photo', 'editorial', 'product'],
+  ['fashion', 'editorial', 'brand'],
+];
+
 function buildReferences() {
   const grid = document.getElementById('references-grid')
   const data = refsData[lang] || refsData.en
@@ -111,6 +133,7 @@ function buildReferences() {
     card.dataset.dr = r.dribbble ? '1' : ''
     card.dataset.fg = r.figma ? '1' : ''
     card.dataset.pt = r.pinterest ? '1' : ''
+    card.dataset.tags = (refTags[i] || []).join(',')
     card.innerHTML = `
       <button class="ref-card__select" type="button" aria-pressed="false" aria-label="Выбрать для подборки"><span class="ref-card__select-star">☆</span></button>
       <div class="ref-card__inner" style="background:linear-gradient(135deg,${r.color}22,${r.color}08)">
@@ -122,6 +145,7 @@ function buildReferences() {
           <a href="${r.figma}" target="_blank" rel="noopener" class="ref-card__link ref-card__link--fg"><span>Fg</span><span>${lang === 'ru' ? 'искать' : 'explore'}</span></a>
           <a href="${r.pinterest}" target="_blank" rel="noopener" class="ref-card__link ref-card__link--pt"><span>Pt</span><span>${lang === 'ru' ? 'искать' : 'explore'}</span></a>
         </div>
+        <button class="ref-card__similar" type="button" data-i="${i}">↔ Похожее</button>
       </div>`
     grid.appendChild(card)
   })
