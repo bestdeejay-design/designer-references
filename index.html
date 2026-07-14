@@ -80,23 +80,22 @@
     }
     [data-theme="light"] #bg-aurora{ background:#EFE6E1; }
     #bg-aurora::before, #bg-aurora::after{
-      content:""; position:absolute; inset:-20%;
+      content:""; position:absolute; inset:-15%;
       background:
-        radial-gradient(40% 40% at 20% 25%, rgba(121,60,52,.55), transparent 60%),
-        radial-gradient(36% 36% at 80% 20%, rgba(192,152,147,.50), transparent 60%),
-        radial-gradient(44% 44% at 72% 80%, rgba(132,73,65,.50), transparent 60%),
-        radial-gradient(40% 40% at 28% 76%, rgba(237,209,201,.35), transparent 60%);
-      filter: blur(65px) saturate(120%);
+        radial-gradient(46% 46% at 18% 24%, rgba(121,60,52,.85), transparent 64%),
+        radial-gradient(42% 42% at 82% 20%, rgba(192,152,147,.80), transparent 64%),
+        radial-gradient(50% 50% at 72% 82%, rgba(132,73,65,.82), transparent 64%),
+        radial-gradient(46% 46% at 26% 78%, rgba(237,209,201,.55), transparent 64%);
       animation: aurora-drift 26s ease-in-out infinite alternate;
       will-change: transform;
     }
     #bg-aurora::after{ animation-duration:34s; animation-direction:alternate-reverse; opacity:.85; }
     [data-theme="light"] #bg-aurora::before, [data-theme="light"] #bg-aurora::after{
       background:
-        radial-gradient(40% 40% at 20% 25%, rgba(121,60,52,.30), transparent 60%),
-        radial-gradient(36% 36% at 80% 20%, rgba(192,152,147,.42), transparent 60%),
-        radial-gradient(44% 44% at 72% 80%, rgba(132,73,65,.26), transparent 60%),
-        radial-gradient(40% 40% at 28% 76%, rgba(238,194,187,.48), transparent 60%);
+        radial-gradient(46% 46% at 18% 24%, rgba(121,60,52,.45), transparent 64%),
+        radial-gradient(42% 42% at 82% 20%, rgba(192,152,147,.55), transparent 64%),
+        radial-gradient(50% 50% at 72% 82%, rgba(132,73,65,.40), transparent 64%),
+        radial-gradient(46% 46% at 26% 78%, rgba(238,194,187,.62), transparent 64%);
     }
     @keyframes aurora-drift{
       0%{ transform: translate3d(-4%,-2%,0) scale(1.05) rotate(0deg); }
@@ -403,7 +402,7 @@
     body.ambient .share-btn-fixed,
     body.ambient .toast{ display:none !important; }
     body.ambient .ref-card__select{ display:none !important; }
-    body.ambient .references{ padding:0; }
+    body.ambient .references{ padding:80px 64px 100px; }
     body.ambient .references__header{ display:none; }
     body.ambient .references__grid{ max-width:1600px; gap:36px; }
     body.ambient .ref-card{ animation: ambient-float 9s ease-in-out infinite; }
