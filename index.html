@@ -407,13 +407,27 @@
       { ru: 'Арт', en: 'Art', ids: [11, 16, 17] },
     ];
 
+    // EN-метка активной категории (Все/Брендинг/Упаковка/…), либо ''.
+    function activeCategoryLabel() {
+      if (!activeCategory) return '';
+      for (const c of CATEGORIES) {
+        if (c.ids && c.ids.length === activeCategory.size &&
+            c.ids.every((n) => activeCategory.has('r' + n))) {
+          return c.en;
+        }
+      }
+      return '';
+    }
+
     // Составной поисковый запрос для направления #index из активных
-    // фильтров: базовая фраза направления + текстовый поиск + активные теги
-    // (без дублей, порядок сохранён).
+    // фильтров: базовая фраза направления + категория + текстовый поиск
+    // + активные теги (без дублей, порядок сохранён).
     function activeSearchQuery(index) {
       const parts = [];
       const base = (refSearch[index] || '').trim();
       if (base) parts.push(base);
+      const cat = activeCategoryLabel();
+      if (cat) parts.push(cat.toLowerCase());
       if (filterQuery) parts.push(filterQuery);
       activeTags.forEach((t) => parts.push(t));
       const seen = new Set();

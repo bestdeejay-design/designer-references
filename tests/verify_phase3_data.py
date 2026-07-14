@@ -63,6 +63,15 @@ def main():
         beh2 = first.query_selector(".ref-card__link--be").get_attribute("href")
         assert beh2 == beh0, "ссылка не вернулась к базовой без фильтра"
 
+        # category filter also refines the query (Цифра -> digital)
+        page.click("#cat-bar .cat-chip[data-cat='5']")
+        page.wait_for_timeout(100)
+        dig = page.query_selector("#references-grid .ref-card[data-id='r10'] .ref-card__link--be")
+        dig_href = dig.get_attribute("href")
+        assert "digital" in dig_href, f"категория не попала в запрос: {dig_href}"
+        page.click("#cat-bar .cat-chip[data-cat='0']")
+        page.wait_for_timeout(100)
+
         # data-id is r0..r17 (used by selection + filter)
         ids = [c.get_attribute("data-id") for c in cards]
         assert ids == [f"r{i}" for i in range(18)], f"data-id mismatch: {ids[:3]}..."
