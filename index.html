@@ -223,6 +223,7 @@
   <div class="share-bar" id="share-bar" hidden>
     <span class="share-bar__count" id="share-count"></span>
     <button type="button" id="share-copy" class="share-bar__btn">Копировать ссылку</button>
+    <button type="button" id="share-md" class="share-bar__btn share-bar__btn--ghost">Список</button>
     <button type="button" id="share-clear" class="share-bar__btn share-bar__btn--ghost">Очистить</button>
   </div>
 
@@ -364,6 +365,22 @@
       const base = location.origin + location.pathname;
       return ids ? base + '?sel=' + encodeURIComponent(ids) : base;
     }
+    function buildSelectionMarkdown() {
+      const data = refsData[lang] || refsData.en;
+      const lines = ['# Подборка референсов — Справочник дизайнера', ''];
+      [...selected].forEach((id) => {
+        const i = parseInt(id.slice(1), 10);
+        const r = data[i];
+        if (!r) return;
+        lines.push('### ' + r.cat);
+        if (r.behance) lines.push('- Behance: ' + r.behance);
+        if (r.dribbble) lines.push('- Dribbble: ' + r.dribbble);
+        if (r.figma) lines.push('- Figma: ' + r.figma);
+        if (r.pinterest) lines.push('- Pinterest: ' + r.pinterest);
+        lines.push('');
+      });
+      return lines.join('\n').trim() + '\n';
+    }
     function enterSharedMode() {
       sharedMode = true;
       document.body.classList.add('shared-mode');
@@ -399,6 +416,11 @@
     });
     document.getElementById('share-clear').addEventListener('click', () => {
       selected.clear(); syncSelectionClasses(); updateShareBar();
+    });
+    document.getElementById('share-md').addEventListener('click', async () => {
+      const md = buildSelectionMarkdown();
+      try { await navigator.clipboard.writeText(md); showToast('Список скопирован'); }
+      catch { showToast('Скопируй вручную:\n' + md); }
     });
     document.getElementById('share-view-all').addEventListener('click', exitSharedMode);
 
