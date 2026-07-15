@@ -1,5 +1,5 @@
 /* Service worker: офлайн-кэш каркаса приложения (cache-first + фоновое обновление) */
-const CACHE = 'designer-refs-v1';
+const CACHE = 'designer-refs-v2';
 const APP_SHELL = [
   './',
   './index.html',
@@ -28,17 +28,14 @@ self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
 
-  // Каркас приложения: отдаём из кэша сразу, параллельно обновляем кэш из сети.
+  // Сначала сеть (всегда свежее для превью), при оффлайне — кэш.
   event.respondWith(
-    caches.match(req).then((cached) => {
-      const network = fetch(req).then((resp) => {
-        if (resp && (resp.ok || resp.type === 'opaque')) {
-          const copy = resp.clone();
-          caches.open(CACHE).then((cache) => cache.put(req, copy));
-        }
-        return resp;
-      }).catch(() => cached);
-      return cached || network;
-    })
+    fetch(req).then((resp) => {
+      if (resp && (resp.ok || resp.type === 'opaque')) {
+        const copy = resp.clone();
+        caches.open(CACHE).then((cache) => cache.put(req, copy));
+      }
+      return resp;
+    }).catch(() => caches.match(req))
   );
 });

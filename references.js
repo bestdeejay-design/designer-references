@@ -27,6 +27,29 @@ function platformSearchUrls(index, queryOverride) {
 }
 
 
+function ui(key) {
+  const langObj = refsI18n[lang];
+  if (!langObj) return key;
+  if (key.indexOf('ui.') === 0 && langObj.ui) {
+    const v = langObj.ui[key.slice(3)];
+    if (v != null) return v;
+  }
+  const v = langObj[key];
+  return v != null ? v : key;
+}
+function applyUI() {
+  document.querySelectorAll('[data-i18n]').forEach(function (el) {
+    el.textContent = ui(el.getAttribute('data-i18n'));
+  });
+  document.querySelectorAll('[data-i18n-aria]').forEach(function (el) {
+    el.setAttribute('aria-label', ui(el.getAttribute('data-i18n-aria')));
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(function (el) {
+    el.setAttribute('placeholder', ui(el.getAttribute('data-i18n-ph')));
+  });
+}
+
+
 function buildReferences() {
   const grid = document.getElementById('references-grid')
   const data = refsData[lang] || refsData.en
@@ -41,8 +64,8 @@ function buildReferences() {
     card.dataset.pt = '1'
     card.dataset.tags = (refTags[i] || []).join(',')
     card.innerHTML = `
-      <button class="ref-card__select" type="button" aria-pressed="false" aria-label="Выбрать для подборки"><span class="ref-card__select-star">☆</span></button>
-      <div class="ref-card__inner" style="background:linear-gradient(135deg,${r.color}22,${r.color}08)">
+      <button class="ref-card__select" type="button" aria-pressed="false" aria-label="${ui('ui.selectAria')}"><span class="ref-card__select-star">☆</span></button>
+      <div class="ref-card__inner" style="--rc:${r.color}">
         <div class="ref-card__cat">${r.cat}</div>
         <div class="ref-card__desc">${r.desc}</div>
         <div class="ref-card__links">
@@ -51,7 +74,7 @@ function buildReferences() {
           <a href="${u.fig}" target="_blank" rel="noopener" class="ref-card__link ref-card__link--fg"><span>Fg</span><span>${lang === 'ru' ? 'искать' : 'explore'}</span></a>
           <a href="${u.pin}" target="_blank" rel="noopener" class="ref-card__link ref-card__link--pt"><span>Pt</span><span>${lang === 'ru' ? 'искать' : 'explore'}</span></a>
         </div>
-        <button class="ref-card__similar" type="button" data-i="${i}">↔ Похожее</button>
+        <button class="ref-card__similar" type="button" data-i="${i}">${ui('ui.similar')}</button>
       </div>`
     grid.appendChild(card)
   })

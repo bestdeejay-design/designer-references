@@ -399,12 +399,12 @@
 <body>
   <div id="bg-aurora" aria-hidden="true"></div>
   <header class="topbar">
-    <div class="topbar__brand">Справочник дизайнера</div>
+    <div class="topbar__brand" data-i18n="ui.brand">Design References</div>
     <div class="controls">
-      <button id="lang-ru" type="button" onclick="setLang('ru')">RU</button>
       <button id="lang-en" type="button" onclick="setLang('en')">EN</button>
-      <button id="ambient-toggle" type="button" onclick="toggleAmbient()" aria-pressed="false" aria-label="Заставка" title="Заставка (S)">◈</button>
-      <button id="theme-toggle" type="button" onclick="toggleTheme()" aria-label="Переключить тему">☾ / ☀</button>
+      <button id="lang-ru" type="button" onclick="setLang('ru')">RU</button>
+      <button id="ambient-toggle" type="button" onclick="toggleAmbient()" aria-pressed="false" aria-label="Screensaver" title="Screensaver (S)" data-i18n-aria="ui.ambientAria">◈</button>
+      <button id="theme-toggle" type="button" onclick="toggleTheme()" aria-label="Toggle theme" data-i18n-aria="ui.themeAria">☾ / ☀</button>
     </div>
   </header>
 
@@ -415,8 +415,8 @@
     </div>
 
     <div class="ref-filterbar">
-      <input id="ref-filter" class="ref-filter" type="search" placeholder="Поиск по направлениям…" />
-      <button id="fav-only" type="button" aria-pressed="false">☆ Только избранное</button>
+      <input id="ref-filter" class="ref-filter" type="search" placeholder="Search directions…" data-i18n-ph="ui.searchPlaceholder" />
+      <button id="fav-only" type="button" aria-pressed="false" data-i18n="ui.favOnly">☆ Favorites only</button>
     </div>
 
     <div class="cat-bar" id="cat-bar"></div>
@@ -441,15 +441,15 @@
 
   <div class="share-banner" id="share-banner" hidden>
     <span id="share-banner-text"></span>
-    <button type="button" id="share-view-all" class="share-banner__btn">Смотреть всё</button>
+    <button type="button" id="share-view-all" class="share-banner__btn" data-i18n="ui.viewAll">View all</button>
   </div>
 
   <div class="share-bar" id="share-bar" hidden>
     <span class="share-bar__count" id="share-count"></span>
-    <button type="button" id="share-copy" class="share-bar__btn">Копировать ссылку</button>
-    <button type="button" id="share-md" class="share-bar__btn share-bar__btn--ghost">Список</button>
-    <button type="button" id="share-present" class="share-bar__btn share-bar__btn--ghost">Презентация</button>
-    <button type="button" id="share-clear" class="share-bar__btn share-bar__btn--ghost">Очистить</button>
+    <button type="button" id="share-copy" class="share-bar__btn" data-i18n="ui.copyLink">Copy link</button>
+    <button type="button" id="share-md" class="share-bar__btn share-bar__btn--ghost" data-i18n="ui.list">List</button>
+    <button type="button" id="share-present" class="share-bar__btn share-bar__btn--ghost" data-i18n="ui.present">Presentation</button>
+    <button type="button" id="share-clear" class="share-bar__btn share-bar__btn--ghost" data-i18n="ui.clear">Clear</button>
   </div>
 
   <div class="toast" id="toast" hidden></div>
@@ -457,8 +457,8 @@
   <div class="present-overlay" id="present-overlay" hidden>
     <div class="present-top">
       <div class="present-counter" id="present-counter"></div>
-      <div class="present-hint">← → — листать · Esc — выйти</div>
-      <button type="button" id="present-close" class="present-close" aria-label="Закрыть презентацию">✕</button>
+      <div class="present-hint" data-i18n="ui.presentHint">← → — navigate · Esc — exit</div>
+      <button type="button" id="present-close" class="present-close" aria-label="Close presentation" data-i18n-aria="ui.closeAria">✕</button>
     </div>
     <div class="present-stage" id="present-stage"></div>
     <div class="present-nav">
@@ -471,7 +471,7 @@
   <script src="references.js"></script>
   <script>
     // Глобальная переменная `lang`, которую ожидают функции из references.js
-    let lang = 'ru';
+    let lang = 'en';
     // Восстанавливаем язык и тему из прошлой сессии (localStorage)
     try {
       const savedLang = localStorage.getItem('references:lang');
@@ -550,7 +550,6 @@
         const textOk = !q || card.textContent.toLowerCase().includes(q);
         const sharedOk = !sharedMode || sharedIds.has(card.dataset.id);
         const catOk = !activeCategory || activeCategory.has(card.dataset.id);
-        const tagOk = activeTags.size === 0 || (card.dataset.tags && card.dataset.tags.split(',').some((t) => activeTags.has(t)));
         const favOk = !favOnly || selected.has(card.dataset.id);
         let platformOk = activePlatforms.size === 0;
         if (!platformOk) {
@@ -559,7 +558,7 @@
             || (activePlatforms.has('fg') && card.dataset.fg)
             || (activePlatforms.has('pt') && card.dataset.pt);
         }
-        card.style.display = (textOk && sharedOk && catOk && platformOk && tagOk && favOk) ? '' : 'none';
+        card.style.display = (textOk && sharedOk && catOk && platformOk && favOk) ? '' : 'none';
         // Для карточек пересобираем ссылки-поиск из текущих фильтров и
         // прячем ссылки невыбранных площадок (фильтр по платформе).
         if (card.classList.contains('ref-card')) {
@@ -613,7 +612,12 @@
     function updateResultCount() {
       const n = [...document.querySelectorAll('.ref-card')].filter((c) => c.style.display !== 'none').length;
       const el = document.getElementById('ref-result');
-      if (el) el.textContent = (lang === 'ru' ? 'Направлений: ' : 'Directions: ') + n;
+      if (!el) return;
+      let s = (lang === 'ru' ? 'Направлений: ' : 'Directions: ') + n;
+      if (activeTags.size > 0) {
+        s += (lang === 'ru' ? ' · теги уточняют поиск: ' : ' · tags refine search: ') + [...activeTags].join(', ');
+      }
+      el.textContent = s;
     }
     function renderTagChips() {
       const bar = document.getElementById('tag-bar');
@@ -682,6 +686,7 @@
 
     function render() {
       document.documentElement.lang = lang;
+      applyUI();
 
       document.getElementById('refs-label').textContent = refsI18n[lang]['refs.label'];
       document.getElementById('refs-subtitle').textContent = refsI18n[lang]['refs.subtitle'];
@@ -761,7 +766,7 @@
       const bar = document.getElementById('share-bar');
       if (sharedMode || selected.size === 0) { bar.hidden = true; return; }
       bar.hidden = false;
-      document.getElementById('share-count').textContent = 'Выбрано: ' + selected.size;
+      document.getElementById('share-count').textContent = ui('ui.selected') + selected.size;
     }
     function saveFav() {
       try { localStorage.setItem('references:fav', JSON.stringify([...selected])); } catch (e) {}
@@ -779,12 +784,12 @@
       const id = presentOrder[presentIndex];
       const r = data[parseInt(id.slice(1), 10)];
       const stage = document.getElementById('present-stage');
-      const u = platformSearchUrls(idx);
+      const u = platformSearchUrls(parseInt(id.slice(1), 10));
       const links = [
-        ['Be', u.beh, 'be'], ['Dr', u.dri, 'dr'],
-        ['Fg', u.fig, 'fg'], ['Pt', u.pin, 'pt'],
-      ].filter(([, url]) => url).map(([t, url, c]) =>
-        `<a class="present-slide__link--${c}" href="${url}" target="_blank" rel="noopener">${t}</a>`).join('');
+        ['Be', u.beh], ['Dr', u.dri],
+        ['Fg', u.fig], ['Pt', u.pin],
+      ].filter(([, url]) => url).map(([t, url]) =>
+        `<a href="${url}" target="_blank" rel="noopener">${t}</a>`).join('');
       stage.innerHTML = `<div class="present-slide" style="--slide-from:${r.color}33;--slide-to:${r.color}0a">
         <div class="present-slide__inner">
           <div class="present-slide__cat">${r.cat}</div>
@@ -829,7 +834,7 @@
     }
     function buildSelectionMarkdown() {
       const data = refsData[lang] || refsData.en;
-      const lines = ['# Подборка референсов — Справочник дизайнера', ''];
+      const lines = [ui('ui.mdHeader'), ''];
       [...selected].forEach((id) => {
         const i = parseInt(id.slice(1), 10);
         const r = data[i];
@@ -849,7 +854,7 @@
       document.body.classList.add('shared-mode');
       const banner = document.getElementById('share-banner');
       banner.hidden = false;
-      document.getElementById('share-banner-text').textContent = 'Подборка: ' + sharedIds.size + ' направлений';
+      document.getElementById('share-banner-text').textContent = ui('ui.collection') + sharedIds.size + ' ' + ui('ui.directions');
       applyFilter();
     }
     function exitSharedMode() {
@@ -875,16 +880,16 @@
     });
     document.getElementById('share-copy').addEventListener('click', async () => {
       const url = buildShareUrl();
-      try { await navigator.clipboard.writeText(url); showToast('Ссылка скопирована'); }
-      catch { showToast('Скопируй вручную: ' + url); }
+      try { await navigator.clipboard.writeText(url); showToast(ui('ui.toastLinkCopied')); }
+      catch { showToast(ui('ui.toastCopyManual') + url); }
     });
     document.getElementById('share-clear').addEventListener('click', () => {
       selected.clear(); syncSelectionClasses(); updateShareBar(); saveFav();
     });
     document.getElementById('share-md').addEventListener('click', async () => {
       const md = buildSelectionMarkdown();
-      try { await navigator.clipboard.writeText(md); showToast('Список скопирован'); }
-      catch { showToast('Скопируй вручную:\n' + md); }
+      try { await navigator.clipboard.writeText(md); showToast(ui('ui.toastListCopied')); }
+      catch { showToast(ui('ui.toastCopyManual') + md); }
     });
     document.getElementById('share-present').addEventListener('click', enterPresentMode);
     document.getElementById('present-close').addEventListener('click', exitPresentMode);
@@ -980,21 +985,21 @@
       });
     }
   </script>
-  <button class="share-btn-fixed" id="share-btn-fixed" aria-label="Поделиться">
+  <button class="share-btn-fixed" id="share-btn-fixed" aria-label="Share" data-i18n-aria="ui.shareTitle">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
       <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
       <line x1="15.71" y1="7.04" x2="8.29" y2="9.96"/><line x1="8.29" y1="14.04" x2="15.71" y2="16.96"/>
     </svg>
   </button>
   <div class="share-pop" id="share-pop" role="dialog" aria-label="Поделиться">
-    <div class="share-pop__title">Поделиться</div>
+    <div class="share-pop__title" data-i18n="ui.shareTitle">Share</div>
     <a data-share="vk" href="#" target="_blank" rel="noopener">VK</a>
     <a data-share="tg" href="#" target="_blank" rel="noopener">Telegram</a>
     <a data-share="fb" href="#" target="_blank" rel="noopener">Facebook</a>
     <a data-share="tw" href="#" target="_blank" rel="noopener">Twitter / X</a>
     <a data-share="wa" href="#" target="_blank" rel="noopener">WhatsApp</a>
-    <button data-share="native" type="button">Поделиться… (система)</button>
-    <button data-share="copy" type="button">Копировать ссылку</button>
+    <button data-share="native" type="button" data-i18n="ui.shareSystem">Share… (system)</button>
+    <button data-share="copy" type="button" data-i18n="ui.copyLink">Copy link</button>
   </div>
 
   </body>

@@ -31,7 +31,9 @@
 }
 .ref-card{
   position:relative;
-  display:block;
+  display:flex;
+  flex-direction:column;
+  min-height:256px;
   border-radius:18px;
   overflow:hidden;
   transition:transform .5s cubic-bezier(.22,1,.36,1), box-shadow .4s ease;
@@ -46,12 +48,9 @@
   padding:32px 36px;
   display:flex;
   flex-direction:column;
-  min-height:160px
-}
-[data-theme="light"] .ref-card__inner{
-  outline:1px solid var(--border);
-  outline-offset:-1px;
-  border-radius:18px
+  flex:1;
+  min-height:160px;
+  border-top:4px solid var(--rc);
 }
 .ref-card__cat{
   font-family:'Unbounded',sans-serif;
@@ -63,7 +62,11 @@
 .ref-card__desc{
   font-size:14px;line-height:1.6;
   color:var(--text-secondary);
-  margin-bottom:auto
+  margin-bottom:auto;
+  display:-webkit-box;
+  -webkit-line-clamp:3;
+  -webkit-box-orient:vertical;
+  overflow:hidden
 }
 .ref-card__links{
   display:flex;
