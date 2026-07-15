@@ -63,6 +63,7 @@ function buildReferences() {
     card.dataset.fg = '1'
     card.dataset.pt = '1'
     card.dataset.tags = (refTags[i] || []).join(',')
+    const ctxHidden = (refContext[i] || []).join(' ')
     card.innerHTML = `
       <button class="ref-card__select" type="button" aria-pressed="false" aria-label="${ui('ui.selectAria')}"><span class="ref-card__select-star">☆</span></button>
       <div class="ref-card__inner" style="--rc:${r.color}">
@@ -75,7 +76,8 @@ function buildReferences() {
           <a href="${u.pin}" target="_blank" rel="noopener" class="ref-card__link ref-card__link--pt"><span>Pt</span><span>${lang === 'ru' ? 'искать' : 'explore'}</span></a>
         </div>
         <button class="ref-card__similar" type="button" data-i="${i}">${ui('ui.similar')}</button>
-      </div>`
+      </div>
+      <span hidden>${ctxHidden}</span>`
     grid.appendChild(card)
   })
 }

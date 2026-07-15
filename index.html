@@ -546,7 +546,13 @@
 
     function applyFilter() {
       const q = filterQuery;
-      document.querySelectorAll('.ref-card, .ref-mini').forEach((card) => {
+      const allCards = document.querySelectorAll('.ref-card, .ref-mini');
+      // Определяем, есть ли хоть одно совпадение по тексту/контексту
+      let anyMatch = false;
+      if (q) {
+        allCards.forEach((c) => { if (c.textContent.toLowerCase().includes(q)) anyMatch = true; });
+      }
+      allCards.forEach((card) => {
         const textOk = !q || card.textContent.toLowerCase().includes(q);
         const sharedOk = !sharedMode || sharedIds.has(card.dataset.id);
         const catOk = !activeCategory || activeCategory.has(card.dataset.id);
@@ -558,7 +564,19 @@
             || (activePlatforms.has('fg') && card.dataset.fg)
             || (activePlatforms.has('pt') && card.dataset.pt);
         }
-        card.style.display = (textOk && sharedOk && catOk && platformOk && favOk) ? '' : 'none';
+        // Видимость: поиск с fallback + объединение с категорией
+        let show;
+        if (!q) {
+          show = sharedOk && catOk && platformOk && favOk;
+        } else if (anyMatch) {
+          // Есть совпадения → показываем карточки по поиску ИЛИ категории
+          const searchOrCat = textOk || (activeCategory && activeCategory.has(card.dataset.id));
+          show = searchOrCat && sharedOk && platformOk && favOk;
+        } else {
+          // Fallback: ничего не нашлось → только структурные фильтры
+          show = sharedOk && catOk && platformOk && favOk;
+        }
+        card.style.display = show ? '' : 'none';
         // Для карточек пересобираем ссылки-поиск из текущих фильтров и
         // прячем ссылки невыбранных площадок (фильтр по платформе).
         if (card.classList.contains('ref-card')) {
@@ -576,7 +594,7 @@
           });
         }
       });
-      updateResultCount();
+      updateResultCount(q && !anyMatch);
     }
 
     function renderChips() {
@@ -609,12 +627,17 @@
         bar.appendChild(b);
       });
     }
-    function updateResultCount() {
+    function updateResultCount(fallback) {
       const n = [...document.querySelectorAll('.ref-card')].filter((c) => c.style.display !== 'none').length;
       const el = document.getElementById('ref-result');
       if (!el) return;
       let s = (lang === 'ru' ? 'Направлений: ' : 'Directions: ') + n;
-      if (activeTags.size > 0) {
+      if (fallback) {
+        s += (lang === 'ru' ? ' · нет совпадений' : ' · no results');
+        if (activeTags.size > 0) {
+          s += (lang === 'ru' ? ', теги уточняют поиск' : ', tags refine search');
+        }
+      } else if (activeTags.size > 0) {
         s += (lang === 'ru' ? ' · теги уточняют поиск: ' : ' · tags refine search: ') + [...activeTags].join(', ');
       }
       el.textContent = s;

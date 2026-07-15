@@ -170,6 +170,50 @@ const refTags = [
 ]
 
 
+/* --- Контекстные ассоциации (язык-нейтральные, RU+EN вперемешку),
+ * индекс совпадает с refsData[lang]. Добавляется в карточку невидимым
+ * блоком, чтобы поиск находил слова, которых нет в cat/desc.
+ * Пользователь набирает существительное — находятся подходящие
+ * направления, даже если слово не указано в названии явно. --- */
+const refContext = [
+  // 0 — Branding & Identity
+  'archetype архетип awareness осведомлённость equity капитал essence суть loyalty лояльность mission миссия perception восприятие personality личность positioning позиционирование premium премиум standards стандарты strategy стратегия voice голос'.split(' '),
+  // 1 — Typography
+  'contrast контраст display акцидентный glyph глиф hierarchy иерархия italic курсив kerning кернинг ligature лигатура proportion пропорция rhythm ритм scale масштаб serif антиква weight насыщенность'.split(' '),
+  // 2 — Packaging
+  'box коробка craft ремесло eco экологичный label этикетка material материал mockup мокап premium премиум structure конструкция sustainable устойчивый tactile тактильный texture текстура wrapping обёртка'.split(' '),
+  // 3 — Posters
+  'billboard билборд collage коллаж composition композиция event событие flyer флаер format формат gig концерт grid сетка minimal минимализм political политический social социальный vintage винтаж'.split(' '),
+  // 4 — Logos
+  'abstract абстрактный badge значок geometric геометрический icon иконка lettermark буквица lockup логотип-блок mascot талисман negative пространство shield щит symbol символ wordmark словесный'.split(' '),
+  // 5 — Editorial
+  'bleed вылет chapter глава column колонка content контент cover обложка folio фолиант layout макет margin поле narrative повествование sequence последовательность spread разворот storytelling сторителлинг'.split(' '),
+  // 6 — Infographics
+  'bar столбец chart диаграмма comparison сравнение flow поток graph график line линия map карта pie круг process процесс radial радиальный statistic статистика timeline таймлайн'.split(' '),
+  // 7 — Exhibition & Signage
+  'banner баннер booth стенд directional указатель environmental средовой flag флаг installation инсталляция kiosk киоск museum музейный pylon пилон stand стенд suspended подвесной wall стена'.split(' '),
+  // 8 — Music Packaging
+  'album альбом booklet буклет case кейс cover обложка disc диск insert вкладыш limited лимитированный merchandise мерч sleeve конверт streaming стриминг tour тур tape кассета'.split(' '),
+  // 9 — Advertising
+  'ambient амбиент campaign кампания content контент digital диджитал guerrilla партизанский launch запуск native нативный outdoor наружка promotion промо seasonal сезонный slogan слоган teaser тизер'.split(' '),
+  // 10 — Game Design
+  'asset ассет gameplay геймплей HUD интерфейс inventory инвентарь level уровень lighting освещение map карта particle частица props пропсы quest квест skill tree дерево texture текстура'.split(' '),
+  // 11 — Illustration
+  'comic комикс concept концепт drawing рисунок gesture жест ink тушь line art лайн storyboard раскадровка portrait портрет sketch скетч watercolor акварель'.split(' '),
+  // 12 — Product Design
+  '3d printing печать CAD engineering инженерия ergonomics эргономика form factor форм-фактор hardware железо industrial промышленный innovation инновация manufacturing производство prototype прототип usability юзабилити'.split(' '),
+  // 13 — UI/UX
+  'accessibility доступность component компонент design system дизайн-система interaction интеракция micro-interaction микроанимация navigation навигация onboarding онбординг responsive адаптивный state состояние transition переход wireframe вайрфрейм'.split(' '),
+  // 14 — Motion
+  'bumper заставка compositing композитинг easing end card концовка keyframe ключ kinetic кинетический lower third нижняя треть sequence последовательность title титры transition переход VFX'.split(' '),
+  // 15 — 3D Art
+  'mesh modeling моделинг PBR polygon полигон render рендер rigging риггинг sculpting скульптинг shader шейдер simulation симуляция texturing текстуринг UV volumetric объёмный'.split(' '),
+  // 16 — Photography
+  'composition композиция depth of field глубина exposure экспозиция film плёнка grading цветокоррекция landscape пейзаж macro макро portrait портрет retouching ретушь street стрит studio студийный white balance баланс'.split(' '),
+  // 17 — Fashion
+  'accessory аксессуар collection коллекция editorial редакционный footwear обувь garment одежда lookbook лукбук luxury люкс pattern принт runway подиум silhouette силуэт style стиль textile текстиль trend тренд'.split(' '),
+]
+
 /* --- Поисковые фразы по направлениям (язык-нейтральные), индекс
  * совпадает с refsData[lang]. Формируют точные ссылки-поиск на
  * площадках (platformSearchUrls в references.js). --- */
